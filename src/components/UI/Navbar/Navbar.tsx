@@ -1,39 +1,51 @@
-"use client";
-import StaggeredMenu from "@/components/StaggeredMenu";
+import CardNav from './CardNav'
 
-const menuItems = [
-  { label: "Home", ariaLabel: "Go to home page", link: "/" },
-  { label: "About", ariaLabel: "Learn about us", link: "/about" },
-  { label: "Services", ariaLabel: "View our services", link: "/services" },
-  { label: "Contact", ariaLabel: "Get in touch", link: "/contact" },
-];
+const logoUrl = "https://ik.imagekit.io/i1pxujmp5t/FProducciones/PHOTO-2025-10-22-20-53-38-Photoroom.png?updatedAt=1761844596278";
 
-const socialItems = [
-  { label: "Twitter", link: "https://twitter.com" },
-  { label: "GitHub", link: "https://github.com" },
-  { label: "LinkedIn", link: "https://linkedin.com" },
-];
 
 const Navbar = () => {
+  const items = [
+    {
+      label: "About",
+      bgColor: "#0D0716",
+      textColor: "#fff",
+      links: [
+        { label: "Company", ariaLabel: "About Company", href: "*" },
+        { label: "Careers", ariaLabel: "About Careers", href: "*" }
+      ]
+    },
+    {
+      label: "Projects", 
+      bgColor: "#170D27",
+      textColor: "#fff",
+      links: [
+        { label: "Featured", ariaLabel: "Featured Projects", href: "*" },
+        { label: "Case Studies", ariaLabel: "Project Case Studies", href: "*" }
+      ]
+    },
+    {
+      label: "Contact",
+      bgColor: "#271E37", 
+      textColor: "#fff",
+      links: [
+        { label: "Email", ariaLabel: "Email us", href: "*" },
+        { label: "Twitter", ariaLabel: "Twitter", href: "*" },
+        { label: "LinkedIn", ariaLabel: "LinkedIn", href: "*" }
+      ]
+    }
+  ];
+
   return (
-    <div style={{ height: "100vh", background: "#1a1a1a" }}>
-      <StaggeredMenu
-        isFixed={true}
-        position="right"
-        items={menuItems}
-        socialItems={socialItems}
-        displaySocials={true}
-        displayItemNumbering={true}
-        menuButtonColor="#fff"
-        openMenuButtonColor="#fff"
-        changeMenuColorOnOpen={true}
-        colors={["#B19EEF", "#5227FF"]}
-        logoUrl="/path-to-your-logo.svg"
-        accentColor="#ff6b6b"
-        onMenuOpen={() => console.log("Menu opened")}
-        onMenuClose={() => console.log("Menu closed")}
-      />
-    </div>
+    <CardNav
+      logo={logoUrl}
+      logoAlt="Company Logo"
+      items={items}
+      baseColor="#fff"
+      menuColor="#000"
+      buttonBgColor="#111"
+      buttonTextColor="#fff"
+      ease="power3.out"
+    />
   );
 };
 
