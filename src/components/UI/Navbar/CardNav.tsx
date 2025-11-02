@@ -3,6 +3,7 @@ import React, { useLayoutEffect, useRef, useState, useCallback } from "react";
 import { gsap } from "gsap";
 import { GoArrowUpRight } from "react-icons/go";
 import Image from "next/image";
+import { ImWhatsapp } from "react-icons/im";
 
 type CardNavLink = {
   label: string;
@@ -35,7 +36,7 @@ const CardNav: React.FC<CardNavProps> = ({
   items,
   className = "",
   ease = "power3.out",
-  baseColor = "#333333",
+  baseColor,
   menuColor,
   buttonBgColor,
   buttonTextColor,
@@ -180,7 +181,7 @@ const CardNav: React.FC<CardNavProps> = ({
             role="button"
             aria-label={isExpanded ? "Close menu" : "Open menu"}
             tabIndex={0}
-            style={{ color: menuColor || "#000" }}
+            style={{ color: menuColor }}
           >
             <div
               className={`hamburger-line w-[30px] h-[2px] bg-current transition-[transform,opacity,margin] duration-300 ease-linear [transform-origin:50%_50%] ${
@@ -207,10 +208,11 @@ const CardNav: React.FC<CardNavProps> = ({
 
           <button
             type="button"
-            className="card-nav-cta-button hidden md:inline-flex border-0 rounded-[calc(0.75rem-0.2rem)] px-4 h-full font-medium cursor-pointer transition-colors duration-300"
-            style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
+            className="card-nav-cta-button hidden md:inline-flex border-0 rounded-[calc(0.75rem-0.2rem)] px-4 h-full font-medium cursor-pointer transition-colors duration-300 justify-center items-center"
+            // style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
           >
-            Get Started
+            <ImWhatsapp className=" size-6" />
+            {/* Contactanos */}
           </button>
         </div>
 
