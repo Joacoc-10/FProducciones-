@@ -1,3 +1,4 @@
+import AboutUs from "@/components/AboutUs";
 import Header from "@/components/Header";
 import Navbar from "@/components/UI/Navbar/Navbar";
 
@@ -6,6 +7,7 @@ export default function Home() {
    <>
    <Navbar/>
    <Header/>
+   <AboutUs/>
    </>
   );
 }

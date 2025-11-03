@@ -11,20 +11,20 @@ const Header = () => {
         Tu navegador no soporta el video.
     </video>
     
-    <div className="absolute inset-0 bg-black/50"></div>
+    <div className="absolute inset-0 bg-black-fp-500/70"></div>
 
-    <div className="relative z-10 flex flex-col items-center justify-center w-full h-full p-4 text-white">
+    <div className="relative z-10 flex flex-col items-center justify-center w-full h-full p-4 text-white-fp-300">
         
         <h1 className="mb-4 text-4xl font-bold text-center md:text-6xl">
-            Fabio Producciones: audio , luces y escenario
+            Fabio Producciones: audio,luces y escenario
         </h1>
         
-        <p className="max-w-2xl mb-8 text-xl text-center">
+        <p className="max-w-2xl mt-6 text-xl text-center">
             Creamos la atmósfera perfecta para tu evento, concierto o fiesta.
         </p>
         
         <a href="#contacto" 
-           className="px-8 py-3 font-bold tracking-wider text-white uppercase transition duration-300 bg-[#B20000] rounded-lg shadow-lg hover:bg-[#990000]">
+           className="px-8 py-3 mt-12 font-bold tracking-wider uppercase transition duration-300 rounded-lg shadow-lg bg-red-fp-600 text-white-fp-200 hover:bg-red-fp-700">
             Solicitar Presupuesto
         </a>
     </div>
