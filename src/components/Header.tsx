@@ -4,7 +4,7 @@ const Header = () => {
 
   return (
 <>
-<div className="relative w-full overflow-hidden h-[600px]">
+<div className="relative w-full overflow-hidden h-[1000px] border-b border-white-fp-300 border-opacity-20">
     <video className="absolute top-0 left-0 object-cover w-full h-full" playsInline autoPlay muted loop poster="https://ik.imagekit.io/i1pxujmp5t/FProducciones/4043976-hd_1920_1080_24fps.mp4?updatedAt=1762096509193">
         <source src="https://ik.imagekit.io/i1pxujmp5t/FProducciones/4043976-hd_1920_1080_24fps.mp4?updatedAt=1762096509193" type="video/mp4" />
         {/* <source src="tu-video.webm" type="video/webm" /> */}
