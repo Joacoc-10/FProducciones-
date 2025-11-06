@@ -4,43 +4,58 @@ import React from "react";
 const services = [
   {
     title: "Audio",
-    videoUrl: "https://ik.imagekit.io/i1pxujmp5t/FProducciones/120954-724685298_small.mp4?updatedAt=1762287887837", 
+    videoUrl:
+      "https://ik.imagekit.io/i1pxujmp5t/FProducciones/120954-724685298_small.mp4?updatedAt=1762287887837",
     alt: "Video de Sistemas de Audio y Consolas",
   },
   {
     title: "Luces",
-    videoUrl: "https://ik.imagekit.io/i1pxujmp5t/FProducciones/12972958_3840_2160_30fps.mp4?updatedAt=1762289024709", 
+    videoUrl:
+      "https://ik.imagekit.io/i1pxujmp5t/FProducciones/12972958_3840_2160_30fps.mp4?updatedAt=1762289024709",
     alt: "Video de Iluminación y Efectos",
   },
   {
     title: "Escenario",
-    videoUrl: "https://ik.imagekit.io/i1pxujmp5t/FProducciones/2941128-uhd_4096_2160_24fps.mp4?updatedAt=1762289226117",
+    videoUrl:
+      "https://ik.imagekit.io/i1pxujmp5t/FProducciones/2941128-uhd_4096_2160_24fps.mp4?updatedAt=1762289226117",
     alt: "Video de Montaje de Estructuras y Escenarios",
   },
 ];
 
-const OVERLAY_CLASS = 'absolute inset-0 bg-black-fp-900 bg-opacity-70 transition-all duration-700 ease-out group-hover:bg-opacity-0';
+const OVERLAY_CLASS =
+  "absolute inset-0 bg-black-fp-900 bg-opacity-70 transition-all duration-700 ease-out group-hover:bg-opacity-0";
 
 const AboutUs = () => {
   return (
     <section className="px-4 py-16 md:px-8">
-      
       {/* 🎯 SECCIÓN DE TÍTULO Y TEXTO INTRODUCTORIO */}
-      <div className="max-w-6xl mx-auto mb-12">
-        <h1 className="mb-4 text-4xl font-extrabold tracking-wider uppercase text-white-fp-300">
-          Quienes Somos?
-        </h1>
-        <p className="text-lg leading-relaxed text-white-fp-300">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Officiis illum eos libero ex, molestiae odio eius dolore deserunt consectetur nihil vel autem laborum rem illo blanditiis suscipit ipsa repudiandae repellendus. Quidem at asperiores alias nam. Porro tempora illum esse quidem eum molestias praesentium aliquam commodi hic deleniti beatae aut, officiis nobis eius.
-        </p>
-      </div>
+     
+<div className="max-w-6xl mx-auto mb-12">
+    <h1 className="mb-4 text-4xl font-extrabold tracking-wider uppercase text-white-fp-300">
+      Quienes Somos?
+    </h1>
+    <p className="text-lg leading-relaxed text-white-fp-300">
+      En Fabio Producciones nos especializamos en ofrecer soluciones
+      integrales de audio, iluminación y montaje de escenarios para todo
+      tipo de eventos. Con años de experiencia en el rubro, brindamos un
+      servicio profesional, confiable y personalizado, adaptado a las
+      necesidades de cada cliente.
+    </p>   
+    <p className="mt-4 text-lg leading-relaxed text-white-fp-300">
+      Contamos con equipamiento de primera calidad y un equipo técnico
+      altamente capacitado, garantizando un sonido impecable, iluminación
+      profesional y un montaje seguro y estético. Nuestro compromiso es que
+      cada evento tenga una experiencia visual y sonora única, cuidando cada
+      detalle desde la planificación hasta la ejecución.
+    </p>
+</div>
 
       {/* 🎯 SECCIÓN DE TARJETAS DE SERVICIO */}
       <div className="grid max-w-6xl grid-cols-1 gap-6 mx-auto md:grid-cols-3">
         {services.map((service, index) => (
           <div
             key={index}
-            className="relative overflow-hidden transition-all duration-500 border-2 shadow-2xl cursor-pointer group h-96 rounded-xl border-dark-gray-fp-500 hover:border-red-fp-700/90"
+            className="relative h-48 overflow-hidden transition-all duration-500 border-2 shadow-2xl cursor-pointer group rounded-xl border-dark-gray-fp-500 hover:border-red-fp-700/90"
           >
             {/* 1. Video de Fondo */}
             <video
@@ -64,13 +79,89 @@ const AboutUs = () => {
                 {service.title}
               </h2>
             </div>
-            
-            {/* 4. Overlay de Acento Rojo (Opcional, para indicar que el video es visible) */}
-             <div className="absolute inset-x-0 bottom-0 h-1 transition-transform duration-500 ease-out origin-left scale-x-0 bg-red-fp-700/90 group-hover:scale-x-100"></div>
 
+            {/* 4. Overlay de Acento Rojo (Opcional, para indicar que el video es visible) */}
+            <div className="absolute inset-x-0 bottom-0 h-1 transition-transform duration-500 ease-out origin-left scale-x-0 bg-red-fp-700/90 group-hover:scale-x-100"></div>
           </div>
         ))}
       </div>
+
+      <div className="max-w-6xl mx-auto mb-12">
+    <h1 className="mb-4 text-4xl font-extrabold tracking-wider uppercase text-white-fp-300">
+      Quienes Somos?
+    </h1>
+    <p className="text-lg leading-relaxed text-white-fp-300">
+      En Fabio Producciones nos especializamos en ofrecer soluciones
+      integrales de audio, iluminación y montaje de escenarios para todo
+      tipo de eventos. Con años de experiencia en el rubro, brindamos un
+      servicio profesional, confiable y personalizado, adaptado a las
+      necesidades de cada cliente.
+    </p>   
+    <p className="mt-4 text-lg leading-relaxed text-white-fp-300">
+      Contamos con equipamiento de primera calidad y un equipo técnico
+      altamente capacitado, garantizando un sonido impecable, iluminación
+      profesional y un montaje seguro y estético. Nuestro compromiso es que
+      cada evento tenga una experiencia visual y sonora única, cuidando cada
+      detalle desde la planificación hasta la ejecución.
+    </p>
+</div>
+<div className="max-w-6xl mx-auto mb-12">
+    <h1 className="mb-4 text-4xl font-extrabold tracking-wider uppercase text-white-fp-300">
+      Quienes Somos?
+    </h1>
+    <p className="text-lg leading-relaxed text-white-fp-300">
+      En Fabio Producciones nos especializamos en ofrecer soluciones
+      integrales de audio, iluminación y montaje de escenarios para todo
+      tipo de eventos. Con años de experiencia en el rubro, brindamos un
+      servicio profesional, confiable y personalizado, adaptado a las
+      necesidades de cada cliente.
+    </p>   
+    <p className="mt-4 text-lg leading-relaxed text-white-fp-300">
+      Contamos con equipamiento de primera calidad y un equipo técnico
+      altamente capacitado, garantizando un sonido impecable, iluminación
+      profesional y un montaje seguro y estético. Nuestro compromiso es que
+      cada evento tenga una experiencia visual y sonora única, cuidando cada
+      detalle desde la planificación hasta la ejecución.
+    </p>
+</div>
+<div className="max-w-6xl mx-auto mb-12">
+    <h1 className="mb-4 text-4xl font-extrabold tracking-wider uppercase text-white-fp-300">
+      Quienes Somos?
+    </h1>
+    <p className="text-lg leading-relaxed text-white-fp-300">
+      En Fabio Producciones nos especializamos en ofrecer soluciones
+      integrales de audio, iluminación y montaje de escenarios para todo
+      tipo de eventos. Con años de experiencia en el rubro, brindamos un
+      servicio profesional, confiable y personalizado, adaptado a las
+      necesidades de cada cliente.
+    </p>   
+    <p className="mt-4 text-lg leading-relaxed text-white-fp-300">
+      Contamos con equipamiento de primera calidad y un equipo técnico
+      altamente capacitado, garantizando un sonido impecable, iluminación
+      profesional y un montaje seguro y estético. Nuestro compromiso es que
+      cada evento tenga una experiencia visual y sonora única, cuidando cada
+      detalle desde la planificación hasta la ejecución.
+    </p>
+</div>
+<div className="max-w-6xl mx-auto mb-12">
+    <h1 className="mb-4 text-4xl font-extrabold tracking-wider uppercase text-white-fp-300">
+      Quienes Somos?
+    </h1>
+    <p className="text-lg leading-relaxed text-white-fp-300">
+      En Fabio Producciones nos especializamos en ofrecer soluciones
+      integrales de audio, iluminación y montaje de escenarios para todo
+      tipo de eventos. Con años de experiencia en el rubro, brindamos un
+      servicio profesional, confiable y personalizado, adaptado a las
+      necesidades de cada cliente.
+    </p>   
+    <p className="mt-4 text-lg leading-relaxed text-white-fp-300">
+      Contamos con equipamiento de primera calidad y un equipo técnico
+      altamente capacitado, garantizando un sonido impecable, iluminación
+      profesional y un montaje seguro y estético. Nuestro compromiso es que
+      cada evento tenga una experiencia visual y sonora única, cuidando cada
+      detalle desde la planificación hasta la ejecución.
+    </p>
+</div>
     </section>
   );
 };
