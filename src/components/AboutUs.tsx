@@ -55,7 +55,7 @@ const AboutUs = () => {
         {services.map((service, index) => (
           <div
             key={index}
-            className="relative h-48 overflow-hidden transition-all duration-500 border-2 shadow-2xl cursor-pointer group rounded-xl border-dark-gray-fp-500 hover:border-red-fp-700/90"
+            className="relative h-48 overflow-hidden transition-all duration-500 shadow-2xl cursor-pointer group rounded-xl card-dark"
           >
             {/* 1. Video de Fondo */}
             <video

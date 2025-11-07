@@ -20,7 +20,7 @@ function EventsModal({ service, onClose }: ServiceModalProps) {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 50, opacity: 0 }}
         transition={{ type: "spring", stiffness: 120, damping: 20 }}
-        className="relative w-full max-w-5xl p-8 overflow-y-auto bg-white rounded-2xl shadow-2xl max-h-[90vh]"
+        className="relative w-full max-w-5xl p-8 overflow-y-auto card-dark rounded-2xl shadow-2xl max-h-[90vh]"
       >
         {/* Botón Cerrar */}
         <button
@@ -31,23 +31,21 @@ function EventsModal({ service, onClose }: ServiceModalProps) {
         </button>
 
         {/* Contenido */}
-        <h1 className="mb-4 text-4xl font-extrabold text-blue-700">
+        <h1 className="mb-4 text-4xl font-extrabold text-red-fp-500/90 font-electrolize">
           {service.title}
         </h1>
-        <p className="mb-6 text-lg text-gray-600">{service.shortDescription}</p>
 
-        <h2 className="mb-3 text-2xl font-bold text-gray-800">
+        <h2 className="mb-3 text-2xl font-bold text-red-fp-500/90 font-electrolize">
           Detalles del Servicio Técnico
         </h2>
-        <p className="leading-relaxed text-gray-700 whitespace-pre-line">
-          {service.fullDescription}
-        </p>
+        <p className="mb-6 text-lg text-white-fp-400 font-inter">{service.fullDescription}</p>
+       
 
         <div className="pt-4 mt-10 border-t border-gray-200">
-          <h3 className="text-xl font-semibold text-gray-800">
+          <h3 className="text-xl font-semibold text-red-fp-500/80 font-electrolize">
             La Base de Nuestra Oferta:
           </h3>
-          <ul className="mt-2 ml-4 space-y-1 text-gray-600 list-disc list-inside">
+          <ul className="mt-2 ml-4 space-y-1 list-disc list-inside text-white-fp-600 font-inter">
             <li>Sistemas de Audio Profesional</li>
             <li>Diseño y Montaje de Luces</li>
             <li>Instalación de Escenario Portátil</li>

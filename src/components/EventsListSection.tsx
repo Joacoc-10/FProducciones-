@@ -53,13 +53,13 @@ export default function EventsListSection() {
           <div
             key={service.id}
             onClick={() => handleOpenService(service)}
-            className="block p-5 transition duration-300 bg-white border rounded-lg shadow-md cursor-pointer hover:shadow-xl hover:scale-[1.02]"
+            className="block p-5 transition duration-300 bg-white border rounded-lg shadow-md cursor-pointer hover:shadow-xl hover:scale-[1.02] card-dark"
           >
-            <h3 className="mb-2 text-xl font-semibold text-blue-700">
+            <h3 className="mb-2 text-xl font-semibold text-white-fp-400 font-electrolize">
               {service.title}
             </h3>
-            <p className="mb-4 text-gray-600">{service.shortDescription}</p>
-            <span className="text-sm font-medium text-blue-500">
+            <p className="mb-4 text-gray-600 font-inter">{service.shortDescription}</p>
+            <span className="text-sm font-medium font-inter text-red-fp-600">
               Ver detalles técnicos →
             </span>
           </div>

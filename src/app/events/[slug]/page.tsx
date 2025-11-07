@@ -37,30 +37,30 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
   return (
     <>
     <Navbar/>
-    <main className="min-h-screen px-6 py-48 bg-black-fp-200 text-white-fp-100">
-      <article className="max-w-4xl p-10 mx-auto shadow-xl bg-black-fp-300 rounded-2xl">
-        <h1 className="mb-6 text-4xl font-extrabold md:text-5xl text-red-fp-600">
+    <main className="min-h-screen px-6 py-48 text-white-fp-100 ">
+      <article className="max-w-4xl p-10 mx-auto shadow-xl bg-black-fp-300 rounded-2xl card-dark">
+        <h1 className="mb-6 text-4xl font-extrabold md:text-5xl text-red-fp-500/90 font-electrolize">
           {service.title}
         </h1>
 
-        {service.shortDescription && (
+        {/* {service.shortDescription && (
           <p className="mb-8 text-lg text-gray-300">
             {service.shortDescription}
           </p>
-        )}
+        )} */}
 
-        <h2 className="mb-3 text-2xl font-bold text-blue-500">
-          Descripción del Servicio
+         <h2 className="mb-3 text-2xl font-bold text-red-fp-500/90 font-electrolize">
+          Detalles del Servicio Técnico
         </h2>
-        <p className="mb-8 leading-relaxed text-gray-200 whitespace-pre-line">
+        <p className="mb-8 leading-relaxed whitespace-pre-line text-white-fp-400 font-inter">
           {service.fullDescription}
         </p>
 
         <section className="pt-6 mt-10 border-t border-gray-600">
-          <h3 className="mb-2 text-xl font-semibold text-gray-100">
+          <h3 className="mb-2 text-xl font-semibold text-red-fp-500/80 font-electrolize">
             La Base de Nuestra Oferta:
           </h3>
-          <ul className="space-y-1 text-gray-400 list-disc list-inside">
+          <ul className="space-y-1 list-disc list-inside text-white-fp-600 font-inter">
             <li>Sistemas de Audio Profesional</li>
             <li>Diseño y Montaje de Luces</li>
             <li>Instalación de Escenario Portátil</li>
