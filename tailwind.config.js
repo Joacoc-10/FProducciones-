@@ -11,6 +11,10 @@ module.exports = {
   ],
   theme: {
   	extend: {
+			fontFamily: {
+        electrolize: ['var(--font-electrolize)', 'sans-serif'], 
+        inter: ['var(--font-inter)', 'sans-serif'], 
+      },
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
