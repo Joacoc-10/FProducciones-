@@ -1,5 +1,7 @@
 import { IEvents } from "@/types/Events";
 import { motion} from "framer-motion";
+import { BackgroundLines } from "./UI/background-lines";
+import InfiniteScrollGallery from "./UI/InfiniteScrollGallery";
 
 interface ServiceModalProps {
   service: IEvents;
@@ -7,13 +9,22 @@ interface ServiceModalProps {
 }
 
 function EventsModal({ service, onClose }: ServiceModalProps) {
+
+  const hasMedia = service.mediaGallery && service.mediaGallery.length > 0;
+  
   return (
+    <>
+    
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-md pt-32"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
+        <BackgroundLines
+        className="absolute inset-0 w-full h-full bg-black/90 backdrop-blur-lg"
+        svgOptions={{ duration: 12 }}
+      />
       {/* Modal Content */}
       <motion.div
         initial={{ y: 50, opacity: 0 }}
@@ -22,6 +33,7 @@ function EventsModal({ service, onClose }: ServiceModalProps) {
         transition={{ type: "spring", stiffness: 120, damping: 20 }}
         className="relative w-full max-w-5xl p-8 overflow-y-auto card-dark rounded-2xl shadow-2xl max-h-[90vh]"
       >
+       
         {/* Botón Cerrar */}
         <button
           onClick={onClose}
@@ -35,14 +47,13 @@ function EventsModal({ service, onClose }: ServiceModalProps) {
           {service.title}
         </h1>
 
-        <h2 className="mb-3 text-2xl font-bold text-red-fp-500/90 font-electrolize">
+        <h2 className="mb-3 text-2xl font-bold text-white-fp-400 font-electrolize">
           Detalles del Servicio Técnico
         </h2>
-        <p className="mb-6 text-lg text-white-fp-400 font-inter">{service.fullDescription}</p>
+        <p className="mb-6 text-lg text-white-fp-500 font-inter">{service.fullDescription}</p>
        
-
-        <div className="pt-4 mt-10 border-t border-gray-200">
-          <h3 className="text-xl font-semibold text-red-fp-500/80 font-electrolize">
+        <div className="pt-4 mt-10 border-t border-gray-700/50">
+          <h3 className="text-xl font-semibold text-white-fp-400 font-electrolize">
             La Base de Nuestra Oferta:
           </h3>
           <ul className="mt-2 ml-4 space-y-1 list-disc list-inside text-white-fp-600 font-inter">
@@ -53,8 +64,15 @@ function EventsModal({ service, onClose }: ServiceModalProps) {
             <li>Servicio de DJ (Opcional)</li>
           </ul>
         </div>
+
+        {hasMedia && (
+            <div className="py-6 my-6 border-t border-b border-gray-700/50">
+                <InfiniteScrollGallery mediaGallery={service.mediaGallery} durationSeconds={110} />
+            </div>
+        )}
       </motion.div>
     </motion.div>
+    </>
   );
 }
 

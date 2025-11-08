@@ -17,8 +17,8 @@ export const NavbarItems: NavbarItem[] = [
     bgColor: "bg-red-fp-700/90",
     textColor: "text-white-fp-100",
     links: [
-      { label: "Catálogo", ariaLabel: "Nuestros servicios", href: Routes.events},
-      { label: "Galería", ariaLabel: "Project Case Studies", href: "#" }
+      { label: "Nuestros Servicios", ariaLabel: "Nuestros servicios", href: Routes.events},
+      { label: "Galería", ariaLabel: "Galeria de fotos y videos", href: "#" }
     ]
   },
   {
@@ -26,7 +26,7 @@ export const NavbarItems: NavbarItem[] = [
     bgColor: "bg-red-fp-600/85", 
     textColor: "text-white-fp-100",
     links: [
-      { label: "Email", ariaLabel: "Email us", href: "#" },
+      { label: "Email", ariaLabel: "Email", href: "#" },
       { label: "Whatsapp", ariaLabel: "Whatsapp", href: "#" },
       { label: "Instagram", ariaLabel: "Instagram", href: "#" }
     ]

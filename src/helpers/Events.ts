@@ -5,7 +5,44 @@ export const events: IEvents[] = [
     id: "Bodas",
     title: "Servicios de Boda 💍",
     shortDescription: "Soporte completo de audio e iluminación para la ceremonia, recepción y fiesta, con opción a DJ profesional.",
-    fullDescription: "Proporcionamos sistemas de Audio de alta fidelidad para la ceremonia (micrófonos inalámbricos y música ambiental) y la recepción. Incluimos diseño de Luces decorativas y de pista de baile. Ofrecemos Escenario Portátil para orquestas o el DJ. Nuestro paquete incluye Técnicos de Audio y Sonido que gestionan la operación completa y un DJ que adapta la música al gusto de los novios e invitados, desde el cóctel hasta el final de la fiesta."
+    fullDescription: "Proporcionamos sistemas de Audio de alta fidelidad para la ceremonia (micrófonos inalámbricos y música ambiental) y la recepción. Incluimos diseño de Luces decorativas y de pista de baile. Ofrecemos Escenario Portátil para orquestas o el DJ. Nuestro paquete incluye Técnicos de Audio y Sonido que gestionan la operación completa y un DJ que adapta la música al gusto de los novios e invitados, desde el cóctel hasta el final de la fiesta.",
+    mediaGallery: [
+      {
+        url: "https://ik.imagekit.io/i1pxujmp5t/FProducciones/f55de1c5-1fc8-4322-bcb6-cde1c0663995.JPG?updatedAt=1762622514115",
+        mediaType: "photo",
+        altText: "Escenario de murga"
+      },
+      {
+        url: "https://ik.imagekit.io/i1pxujmp5t/FProducciones/aa4ab966-8cf5-49c1-8209-de54091e652b.JPG?updatedAt=1762622515404",
+        mediaType: "photo",
+        altText: "Escenario de murga"
+      },
+      {
+        url: "https://ik.imagekit.io/i1pxujmp5t/FProducciones/1fb3af46-9b79-4ed7-8fa0-d5bdc87fafe0.JPG?updatedAt=1762622515826",
+        mediaType: "photo",
+        altText: "Escenario de murga"
+      },
+        {
+        url: "https://ik.imagekit.io/i1pxujmp5t/FProducciones/7cb71912-631e-40d7-899b-1a0eef828e21.JPG?updatedAt=1762622516000",
+        mediaType: "photo",
+        altText: "Escenario de murga"
+      },
+       {
+        url: "https://ik.imagekit.io/i1pxujmp5t/FProducciones/pexels-wsilvasjb-16085578.jpg?updatedAt=1762288449786",
+        mediaType: "photo",
+        altText: "Escenario de murga"
+      },
+       {
+        url: "https://ik.imagekit.io/i1pxujmp5t/FProducciones/pexels-goumbik-1309597.jpg?updatedAt=1762288268337",
+        mediaType: "photo",
+        altText: "Escenario de murga"
+      },
+      {
+        url: "https://ik.imagekit.io/i1pxujmp5t/FProducciones/120954-724685298_small.mp4?updatedAt=1762287887837",
+        mediaType: "video",
+        altText: "Video de consola"
+      }
+    ]
   },
   {
     id: "CumpleanosDe15",
