@@ -1,8 +1,10 @@
 import AboutUs from "@/components/AboutUs";
 import EventsListSection from "@/components/EventsListSection";
+import Gallery from "@/components/Gallery";
 import Header from "@/components/Header";
-// import SplashCursor from "@/components/SplashCursor";
+import Footer from "@/components/UI/Footer/Footer";
 import Navbar from "@/components/UI/Navbar/Navbar";
+import SplashCursor from "@/components/UI/SplashCursor";
 import { TracingBeam } from "@/components/UI/tracing-beam";
 
 export default function Home() {
@@ -19,6 +21,8 @@ export default function Home() {
       <TracingBeam>
         <AboutUs />
         <EventsListSection/>
+        <Gallery/>
+        <Footer/>
       </TracingBeam>
     </>
   );
