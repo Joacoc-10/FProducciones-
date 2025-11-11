@@ -34,7 +34,7 @@ export const gallery: IGallery[] = [
   {
     id: 6,
     url: "https://ik.imagekit.io/i1pxujmp5t/FProducciones/f55de1c5-1fc8-4322-bcb6-cde1c0663995.JPG?updatedAt=1762622514115",
-    mediaType: "video",
+    mediaType: "photo",
     altText: "Video de murga"
   },
   {

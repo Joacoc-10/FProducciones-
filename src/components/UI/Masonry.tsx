@@ -1,16 +1,14 @@
 "use client";
 
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { gsap } from 'gsap';
-import Image from 'next/image'; // Importamos Image de Next.js
-// Asumiendo que esta es tu interfaz:
+import Image from 'next/image';
 import { IGallery } from "@/types/Gallery"; 
 
-// --- Hooks Auxiliares (sin cambios) ---
+// --- Hooks Auxiliares ---
 
 const useMedia = (queries: string[], values: number[], defaultValue: number): number => {
   const get = () => values[queries.findIndex(q => matchMedia(q).matches)] ?? defaultValue;
-
   const [value, setValue] = useState<number>(get);
 
   useEffect(() => {
@@ -44,7 +42,9 @@ const preloadImages = async (urls: string[]): Promise<void> => {
     urls.map(
       src =>
         new Promise<void>(resolve => {
-          const img = new (window.Image || Image)();
+          // Usamos window.Image para evitar conflictos con next/image
+          // eslint-disable-next-line no-undef
+          const img = new window.Image(); 
           img.src = src;
           img.onload = img.onerror = () => resolve();
         })
@@ -54,9 +54,7 @@ const preloadImages = async (urls: string[]): Promise<void> => {
 
 // --- Interfaces Adaptadas ---
 
-// Nuevo tipo interno que extiende IGallery para el cálculo de Masonry
 interface MasonryItem extends IGallery {
-    // Propiedad requerida por el cálculo Masonry, usamos un valor base.
     calculatedHeight: number; 
 }
 
@@ -68,7 +66,6 @@ interface GridItem extends MasonryItem {
 }
 
 interface MasonryProps {
-  // Ahora acepta tu interfaz IGallery[]
   items: IGallery[]; 
   ease?: string;
   duration?: number;
@@ -78,7 +75,6 @@ interface MasonryProps {
   hoverScale?: number;
   blurToFocus?: boolean;
   colorShiftOnHover?: boolean;
-  // Prop para el manejo de click (ej. abrir Lightbox)
   onItemClick?: (item: IGallery) => void;
 }
 
@@ -94,7 +90,7 @@ const Masonry: React.FC<MasonryProps> = ({
   hoverScale = 0.95,
   blurToFocus = true,
   colorShiftOnHover = false,
-  onItemClick // Nueva prop para el click
+  onItemClick
 }) => {
   const columns = useMedia(
     ['(min-width:1500px)', '(min-width:1000px)', '(min-width:600px)', '(min-width:400px)'],
@@ -104,11 +100,13 @@ const Masonry: React.FC<MasonryProps> = ({
 
   const [containerRef, { width }] = useMeasure<HTMLDivElement>();
   const [imagesReady, setImagesReady] = useState(false);
+  
+  // 🚨 ELIMINAMOS el estado [calculatedContainerHeight, setCalculatedContainerHeight]
 
   const getInitialPosition = (item: GridItem) => {
     const containerRect = containerRef.current?.getBoundingClientRect();
     if (!containerRect) return { x: item.x, y: item.y };
-
+    
     let direction = animateFrom;
     if (animateFrom === 'random') {
       const dirs = ['top', 'bottom', 'left', 'right'];
@@ -135,45 +133,59 @@ const Masonry: React.FC<MasonryProps> = ({
   };
 
   useEffect(() => {
-    // 🚨 Solo precargar fotos
     const imageItems = items.filter(i => i.mediaType === 'photo'); 
     preloadImages(imageItems.map(i => i.url)).then(() => setImagesReady(true));
   }, [items]);
 
-  const grid = useMemo<GridItem[]>(() => {
-    if (!width) return [];
+  // useMemo calcula la cuadrícula y la altura máxima.
+  const gridAndHeight = useMemo(() => {
+    if (!width) return { grid: [], maxColHeight: 0 };
     const colHeights = new Array(columns).fill(0);
     const gap = 16;
     const totalGaps = (columns - 1) * gap;
     const columnWidth = (width - totalGaps) / columns;
 
-    // Mapear IGallery a MasonryItem (añadiendo la altura base para el cálculo)
     const masonryItems: MasonryItem[] = items.map(item => ({
         ...item,
-        // Usamos un valor fijo como base para calcular el diseño
-        calculatedHeight: item.id % 3 === 0 ? 800 : (item.id % 2 === 0 ? 400 : 600), 
+        // Usamos alturas variables para el efecto masonry
+        calculatedHeight: item.id % 3 === 0 ? 800 : (item.id % 2 === 0 ? 400 : 600),
     }));
 
-    // Aplicar el cálculo Masonry
-    return masonryItems.map(child => {
+
+    const calculatedGrid = masonryItems.map(child => {
         const col = colHeights.indexOf(Math.min(...colHeights));
         const x = col * (columnWidth + gap);
-        // Usar calculatedHeight
         const height = child.calculatedHeight / 2; 
         const y = colHeights[col];
 
         colHeights[col] += height + gap;
         return { ...child, x, y, w: columnWidth, h: height };
     });
+
+    const maxColHeight = Math.max(...colHeights);
+    
+    // Retornamos la cuadrícula y la altura máxima
+    return { grid: calculatedGrid, maxColHeight: maxColHeight + gap };
   }, [columns, items, width]);
+  
+  const grid = gridAndHeight.grid;
+
+  // 🚨 ELIMINAMOS el useEffect con setCalculatedContainerHeight.
+
 
   const hasMounted = useRef(false);
 
+  // 💡 useLayoutEffect maneja la animación (GSAP) Y la altura del contenedor.
   useLayoutEffect(() => {
+    // 1. Aplicar la altura calculada al contenedor padre (CORRECCIÓN DE FLUJO DOM)
+    if (containerRef.current && gridAndHeight.maxColHeight > 0) {
+        containerRef.current.style.height = `${gridAndHeight.maxColHeight}px`;
+    }
+    
+    // 2. Lógica de Animación (GSAP)
     if (!imagesReady) return;
 
     grid.forEach((item, index) => {
-      // Usamos String(item.id) porque data-key requiere un string
       const selector = `[data-key="${item.id}"]`; 
       const animProps = { x: item.x, y: item.y, width: item.w, height: item.h };
 
@@ -209,7 +221,8 @@ const Masonry: React.FC<MasonryProps> = ({
     });
 
     hasMounted.current = true;
-  }, [grid, imagesReady, stagger, animateFrom, blurToFocus, duration, ease]);
+    
+  }, [grid, imagesReady, stagger, animateFrom, blurToFocus, duration, ease, containerRef, gridAndHeight.maxColHeight]); // Dependencia actualizada
 
   const handleMouseEnter = (id: string, element: HTMLElement) => {
     if (scaleOnHover) {
@@ -242,14 +255,17 @@ const Masonry: React.FC<MasonryProps> = ({
   // --- Renderizado ---
 
   return (
-    <div ref={containerRef} className="relative w-full h-full">
+    <div 
+        ref={containerRef} 
+        className="relative w-full mt-12" 
+        // 🚨 ELIMINAMOS la propiedad style de altura. Ahora se aplica vía useLayoutEffect
+    > 
       {grid.map(item => (
         <div
           key={item.id}
           data-key={item.id}
-          className="box-content absolute cursor-pointer" // Añadimos cursor-pointer
+          className="box-content absolute cursor-pointer"
           style={{ willChange: 'transform, width, height, opacity' }}
-          // 🚨 Manejo de click: Usamos onItemClick si está definido
           onClick={() => onItemClick && onItemClick(item)} 
           onMouseEnter={e => handleMouseEnter(String(item.id), e.currentTarget)}
           onMouseLeave={e => handleMouseLeave(String(item.id), e.currentTarget)}
@@ -258,16 +274,15 @@ const Masonry: React.FC<MasonryProps> = ({
           {item.mediaType === 'photo' ? (
               // Contenedor de imagen usando Image de Next.js
               <div 
-                  className="relative w-full h-full rounded-[10px] shadow-[0px_10px_50px_-10px_rgba(0,0,0,0.2)] overflow-hidden" // overflow-hidden para redondeo
+                  className="relative w-full h-full rounded-[10px] shadow-[0px_10px_50px_-10px_rgba(0,0,0,0.2)] overflow-hidden"
               >
                   <Image
                       src={item.url}
                       alt={item.altText || 'Foto de proyecto'}
-                      fill // Usamos fill para que cubra w-full h-full
-                      sizes={`(${item.w}px)`} // Ayuda a Next.js a optimizar
-                      className="object-cover transition-transform duration-300" 
+                      fill
+                      sizes={`(${item.w}px)`}
+                      className="object-cover transition-all duration-300 blur-sm hover:blur-none" 
                   />
-                  {/* Overlay para colorShiftOnHover si es necesario */}
                   {colorShiftOnHover && (
                       <div className="color-overlay absolute inset-0 rounded-[10px] bg-gradient-to-tr from-pink-500/50 to-sky-500/50 opacity-0 pointer-events-none" />
                   )}
@@ -282,7 +297,7 @@ const Masonry: React.FC<MasonryProps> = ({
                   muted
                   autoPlay
                   playsInline
-                  className="object-cover w-full h-full rounded-[10px] shadow-[0px_10px_50px_-10px_rgba(0,0,0,0.2)]"
+                  className="object-cover w-full h-full rounded-[10px] shadow-[0px_10px_50px_-10px_rgba(0,0,0,0.2)] blur-sm hover:blur-none"
               />
           )}
 

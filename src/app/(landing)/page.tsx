@@ -12,7 +12,7 @@ export default function Home() {
     <>
       {/* Efecto de arcoiris en el mouse */}
       {/* <SplashCursor /> */}
-      
+
       {/* Header */}
       <Navbar />
       <Header />
@@ -20,11 +20,11 @@ export default function Home() {
       {/* Resto de la pagina envuelto en componente de color para el scrol */}
       <TracingBeam>
         <AboutUs />
-        <EventsListSection/>
-        <Gallery/>
+        <EventsListSection />
+        <Gallery />
       </TracingBeam>
-      
-        <Footer/>
+
+      <Footer />
     </>
   );
 }
