@@ -22,8 +22,9 @@ export default function Home() {
         <AboutUs />
         <EventsListSection/>
         <Gallery/>
-        <Footer/>
       </TracingBeam>
+      
+        <Footer/>
     </>
   );
 }

@@ -5,7 +5,7 @@ import React from "react";
 const Footer = () => {
   return (
     <>
-      <footer className="m-4 bg-white rounded-lg shadow-sm dark:bg-gray-900">
+      <footer className="m-4 rounded-lg shadow-sm bg-white-fp-400/80 ">
         <div className="w-full max-w-screen-xl p-4 mx-auto md:py-8">
           <div className="sm:flex sm:items-center sm:justify-between">
             <Link
@@ -14,10 +14,10 @@ const Footer = () => {
             >
               <Image // <-- Usamos el componente Image de Next.js
                 src="https://ik.imagekit.io/i1pxujmp5t/FProducciones/PHOTO-2025-10-22-20-53-38-Photoroom.png?updatedAt=1761844596278"
-                className="h-8 me-3"
+                className="w-24 h-18"
                 alt="FlowBite Logo"
-                width={48} // Ancho en píxeles (igual a h-8, que es 32px)
-                height={82} // Alto en píxeles (igual a h-8, que es 32px)
+                width={60} // Ancho en píxeles (igual a h-8, que es 32px)
+                height={48} // Alto en píxeles (igual a h-8, que es 32px)
               />
             </Link>
 
@@ -46,11 +46,11 @@ const Footer = () => {
           </div>
           <hr className="my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
           <span className="block text-sm text-gray-500 sm:text-center dark:text-gray-400">
-            © 2023{" "}
+            © 2025
             <a href="https://flowbite.com/" className="hover:underline">
-              Flowbite™
+              FProducciones
             </a>
-            . All Rights Reserved.
+            . Todos los derechos reservados.
           </span>
         </div>
       </footer>
