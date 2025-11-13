@@ -6,6 +6,9 @@ import { AnimatePresence } from "framer-motion";
 import { events } from "@/helpers/Events";
 import { IEvents } from "@/types/Events";
 import EventsModal from "./EventsModal";
+import CardSwap, { Card } from "./UI/CardSwap";
+import Image from "next/image";
+import EventsCardSwap from "./EventsCardSwap";
 
 export default function EventsListSection() {
   const router = useRouter();
@@ -14,20 +17,20 @@ export default function EventsListSection() {
 
   // 🔁 Si el usuario entra directo a /events/Algo, abrimos el modal correspondiente
   useEffect(() => {
-  const match = pathname.match(/^\/events\/(.+)/);
-  if (match) {
-    const slug = decodeURIComponent(match[1]);
-    const found = events.find(
-      (s) => s.id.toLowerCase() === slug.toLowerCase()
-    );
-    if (found) {
-      queueMicrotask(() => setSelectedService(found));
+    const match = pathname.match(/^\/events\/(.+)/);
+    if (match) {
+      const slug = decodeURIComponent(match[1]);
+      const found = events.find(
+        (s) => s.id.toLowerCase() === slug.toLowerCase()
+      );
+      if (found) {
+        queueMicrotask(() => setSelectedService(found));
+      }
+    } else {
+      // Si salimos de /events/slug, cerramos modal
+      queueMicrotask(() => setSelectedService(null));
     }
-  } else {
-    // Si salimos de /events/slug, cerramos modal
-    queueMicrotask(() => setSelectedService(null));
-  }
-}, [pathname]);
+  }, [pathname]);
 
   // 💡 Cuando abres un servicio
   const handleOpenService = (service: IEvents) => {
@@ -42,10 +45,13 @@ export default function EventsListSection() {
   };
 
   return (
-    <section className="container px-4 py-10 mx-auto" id="Events">
-      <h1 className="mb-10 text-4xl font-extrabold text-white-fp-300 font-electrolize">
-       Nuestros servicios
+    <section className="container px-4 py-24 mx-auto" id="Events">
+      <h1 className="mb-10 text-5xl font-extrabold text-white-fp-300 font-electrolize">
+        Nuestros servicios
       </h1>
+
+      {/* Seccion de cartas moviles con Servicios */}
+      <EventsCardSwap />
 
       {/* Cards */}
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
@@ -58,7 +64,9 @@ export default function EventsListSection() {
             <h3 className="mb-2 text-xl font-semibold text-white-fp-400 font-electrolize">
               {service.title}
             </h3>
-            <p className="mb-4 text-gray-600 font-inter">{service.shortDescription}</p>
+            <p className="mb-4 text-gray-600 font-inter">
+              {service.shortDescription}
+            </p>
             <span className="text-sm font-medium font-inter text-red-fp-600">
               Ver detalles técnicos →
             </span>
@@ -75,5 +83,3 @@ export default function EventsListSection() {
     </section>
   );
 }
-
-
