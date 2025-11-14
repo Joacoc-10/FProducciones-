@@ -6,8 +6,6 @@ import { AnimatePresence } from "framer-motion";
 import { events } from "@/helpers/Events";
 import { IEvents } from "@/types/Events";
 import EventsModal from "./EventsModal";
-import CardSwap, { Card } from "./UI/CardSwap";
-import Image from "next/image";
 import EventsCardSwap from "./EventsCardSwap";
 
 export default function EventsListSection() {
