@@ -7,7 +7,7 @@ const EventsCardSwap = () => {
     <>
       <div
         style={{ height: "600px", position: "relative" }}
-        className="relative z-50 mb-48 h-[400px] sm:h-[500px] md:h-[550px] lg:h-[600px]"
+        className="relative z-10 mb-48 h-[400px] sm:h-[500px] md:h-[550px] lg:h-[600px]"
       >
         <CardSwap
           cardDistance={60}

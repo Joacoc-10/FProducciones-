@@ -52,7 +52,7 @@ export default function EventsListSection() {
       <EventsCardSwap />
 
       {/* Cards */}
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <div className="relative z-20 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
         {events.map((service) => (
           <div
             key={service.id}
@@ -66,7 +66,7 @@ export default function EventsListSection() {
               {service.shortDescription}
             </p>
             <span className="text-sm font-medium font-inter text-red-fp-600">
-              Ver detalles técnicos →
+              Ver detalles →
             </span>
           </div>
         ))}
