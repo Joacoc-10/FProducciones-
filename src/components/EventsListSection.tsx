@@ -7,6 +7,7 @@ import { events } from "@/helpers/Events";
 import { IEvents } from "@/types/Events";
 import EventsModal from "./EventsModal";
 import EventsCardSwap from "./EventsCardSwap";
+import ScrollFloat from "./UI/ScrollFloat";
 
 export default function EventsListSection() {
   const router = useRouter();
@@ -43,34 +44,38 @@ export default function EventsListSection() {
   };
 
   return (
-    <section className="container px-4 py-24 mx-auto" id="Events">
-      <h1 className="mb-10 text-5xl font-extrabold text-white-fp-300 font-electrolize">
-        Nuestros servicios
-      </h1>
+    <section className="container px-4 py-24 mx-auto max-w-7xl" id="Events">
+      <ScrollFloat direction="left">
+        <h1 className="mb-10 text-5xl font-extrabold text-white-fp-300 font-electrolize">
+          Nuestros servicios
+        </h1>
+      </ScrollFloat>
 
       {/* Seccion de cartas moviles con Servicios */}
-      <EventsCardSwap />
+        <EventsCardSwap />
 
       {/* Cards */}
-      <div className="relative z-20 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {events.map((service) => (
-          <div
-            key={service.id}
-            onClick={() => handleOpenService(service)}
-            className="block p-5 transition duration-300 bg-white border rounded-lg shadow-md cursor-pointer hover:shadow-xl hover:scale-[1.02] card-dark"
-          >
-            <h3 className="mb-2 text-xl font-semibold text-white-fp-400 font-electrolize">
-              {service.title}
-            </h3>
-            <p className="mb-4 text-gray-600 font-inter">
-              {service.shortDescription}
-            </p>
-            <span className="text-sm font-medium font-inter text-red-fp-600">
-              Ver detalles →
-            </span>
-          </div>
-        ))}
-      </div>
+      <ScrollFloat direction="up">
+        <div className="relative z-20 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+          {events.map((service) => (
+            <div
+              key={service.id}
+              onClick={() => handleOpenService(service)}
+              className="block p-5 transition duration-300 bg-white border rounded-lg shadow-md cursor-pointer hover:shadow-xl hover:scale-[1.02] card-dark"
+            >
+              <h3 className="mb-2 text-xl font-semibold text-white-fp-400 font-electrolize">
+                {service.title}
+              </h3>
+              <p className="mb-4 text-gray-600 font-inter">
+                {service.shortDescription}
+              </p>
+              <span className="text-sm font-medium font-inter text-red-fp-600">
+                Ver detalles →
+              </span>
+            </div>
+          ))}
+        </div>
+      </ScrollFloat>
 
       {/* Modal Overlay */}
       <AnimatePresence>

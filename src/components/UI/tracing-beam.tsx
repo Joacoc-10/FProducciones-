@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   motion,
   useTransform,
@@ -18,19 +18,31 @@ export const TracingBeam = ({
   children: React.ReactNode;
   className?: string;
 }) => {
-  const ref = useRef<HTMLDivElement>(null);
+  // const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start center", "end start"],
+    // target: ref,
+    offset: ["start start", "end end"],
   });
 
   const contentRef = useRef<HTMLDivElement>(null);
   const [svgHeight, setSvgHeight] = useState(0);
 
-  useEffect(() => {
-    if (contentRef.current) {
-      setSvgHeight(contentRef.current.offsetHeight);
-    }
+  useLayoutEffect(() => {
+    if (!contentRef.current) return;
+    
+    // 1. Medición inicial (Se ejecuta después de que el DOM está listo)
+    setSvgHeight(contentRef.current.offsetHeight); 
+
+    // 2. Observer para reaccionar a cambios de altura (cuando la galería se expande)
+    const observer = new ResizeObserver(([entry]) => {
+        // Actualiza el estado con la altura real y final del contenido
+        setSvgHeight(entry.contentRect.height);
+    });
+
+    observer.observe(contentRef.current);
+
+    // 3. Limpieza
+    return () => observer.disconnect();
   }, []);
 
   const pathOffset = useTransform(scrollYProgress, [0, 1], [1, 0]);
@@ -52,10 +64,10 @@ export const TracingBeam = ({
 
   return (
     <motion.div
-      ref={ref}
-      className={cn("relative mx-auto h-full w-full max-w-6xl", className)}
+      // ref={ref}
+      className={cn("relative mx-auto h-full w-full max-w-[1440px]", className)}
     >
-      <div className="absolute top-3 -left-4 md:-left-20">
+      <div className="absolute top-3 -left-4 2xl:-left-10">
         <motion.div
           transition={{
             duration: 0.2,
@@ -129,7 +141,7 @@ export const TracingBeam = ({
           
         </svg>
       </div>
-      <div ref={contentRef}>{children}</div>
+      <div ref={contentRef} className="pl-8 xl:pl-0">{children}</div>
     </motion.div>
   );
 };

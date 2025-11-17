@@ -1,60 +1,132 @@
+"use client";
+
+import { contactsLinks } from "@/helpers/Contacts";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import { AiOutlineMail } from "react-icons/ai";
+import { BsInstagram } from "react-icons/bs";
+import { ImWhatsapp } from "react-icons/im";
+
+const getIcons = (iconName: string) => {
+  switch (iconName) {
+    case "whatsapp":
+      return ImWhatsapp;
+    case "instagram":
+      return BsInstagram;
+    case "email":
+      return AiOutlineMail;
+    default:
+      return null;
+  }
+};
 
 const Footer = () => {
   return (
-    <>
-      <footer className="m-4 rounded-lg shadow-sm bg-white-fp-400/80 ">
-        <div className="w-full max-w-screen-xl p-4 mx-auto md:py-8">
-          <div className="sm:flex sm:items-center sm:justify-between">
-            <Link
-              href="/"
-              className="flex items-center mb-4 space-x-3 sm:mb-0 rtl:space-x-reverse"
-            >
-              <Image // <-- Usamos el componente Image de Next.js
-                src="https://ik.imagekit.io/i1pxujmp5t/FProducciones/PHOTO-2025-10-22-20-53-38-Photoroom.png?updatedAt=1761844596278"
-                className="w-24 h-18"
-                alt="FlowBite Logo"
-                width={60} // Ancho en píxeles (igual a h-8, que es 32px)
-                height={48} // Alto en píxeles (igual a h-8, que es 32px)
-              />
-            </Link>
+    <footer className="m-4 mt-16 rounded-lg shadow-sm bg-white-fp-300">
+      <div className="w-full p-4 mx-auto max-w-7xl ">
+        <div className="flex flex-col items-center justify-between sm:flex-row">
+          {/* Logo pequeño */}
+          <Link
+            href="/"
+            className="flex items-center justify-center space-x-2 sm:justify-start"
+          >
+            <Image
+              src="https://ik.imagekit.io/i1pxujmp5t/FProducciones/PHOTO-2025-10-22-20-53-38-Photoroom.png?updatedAt=1761844596278"
+              alt="FProducciones Logo"
+              className="w-16 h-auto"
+              width={100}
+              height={100}
+            />
+          </Link>
 
-            <ul className="flex flex-wrap items-center mb-6 text-sm font-medium text-gray-500 sm:mb-0 dark:text-gray-400">
-              <li>
-                <a href="#" className="hover:underline me-4 md:me-6">
-                  About
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:underline me-4 md:me-6">
-                  Privacy Policy
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:underline me-4 md:me-6">
-                  Licensing
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:underline">
-                  Contact
-                </a>
-              </li>
-            </ul>
+          {/* Menú reducido */}
+          <ul className="flex flex-wrap items-center mt-3 text-xs font-medium text-gray-600 sm:mt-0">
+            <li>
+              <a href="#About" className="hover:text-gray-800 me-3">
+                Sobre nosotros
+              </a>
+            </li>
+            <li>
+              <a href="#Services" className="hover:text-gray-800 me-3">
+                Servicios
+              </a>
+            </li>
+            <li>
+              <a href="#Gallery" className="hover:text-gray-800 me-3">
+                Galería
+              </a>
+            </li>
+            <li>
+              <a href="#Contact" className="hover:text-gray-800">
+                Contacto
+              </a>
+            </li>
+          </ul>
+
+          {/* Íconos más pequeños y más juntos */}
+          {/* Íconos */}
+          <div className="flex items-center mt-3 space-x-3 sm:mt-0">
+            {contactsLinks.map((item) => {
+              const Icon = getIcons(item.socialMedia);
+              if (!Icon) return null;
+
+              // 📌 SOLO UN ICONO DE WHATSAPP — usa el primer número
+              if (item.socialMedia === "whatsapp") {
+                const firstPhone = item.phone[0]; // <-- usa solo el primer número
+
+                return (
+                  <Link
+                    key={firstPhone}
+                    href={`https://wa.me/${firstPhone.replace(/\D/g, "")}`}
+                    target="_blank"
+                    className="text-gray-600 transition-colors hover:text-gray-800"
+                  >
+                    <Icon size={18} />
+                  </Link>
+                );
+              }
+
+              // INSTAGRAM
+              if (item.socialMedia === "instagram") {
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.url}
+                    target="_blank"
+                    className="text-gray-600 transition-colors hover:text-gray-800"
+                  >
+                    <Icon size={18} />
+                  </Link>
+                );
+              }
+
+              // EMAIL
+              if (item.socialMedia === "email") {
+                return (
+                  <Link
+                    key={item.name}
+                    href={`mailto:${item.mailtoLink}`}
+                    className="text-gray-600 transition-colors hover:text-gray-800"
+                  >
+                    <Icon size={18} />
+                  </Link>
+                );
+              }
+            })}
           </div>
-          <hr className="my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
-          <span className="block text-sm text-gray-500 sm:text-center dark:text-gray-400">
-            © 2025
-            <a href="https://flowbite.com/" className="hover:underline">
-              FProducciones
-            </a>
-            . Todos los derechos reservados.
-          </span>
         </div>
-      </footer>
-    </>
+
+        {/* Línea finita */}
+        <hr className="my-3 border-gray-300" />
+
+        {/* Texto muy compacto */}
+        <span className="block text-xs text-center text-gray-600">
+          © 2025 <span className="font-medium">FProducciones</span>. Todos los
+          derechos reservados.
+        </span>
+      </div>
+    </footer>
   );
 };
 

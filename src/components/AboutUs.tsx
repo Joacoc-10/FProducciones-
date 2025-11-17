@@ -1,4 +1,5 @@
 import React from "react";
+import ScrollFloat from "./UI/ScrollFloat";
 
 // Datos de las tarjetas
 const services = [
@@ -30,10 +31,14 @@ const AboutUs = () => {
     <section className="px-4 py-16 md:px-8" id="AboutUs">
       {/* 🎯 SECCIÓN DE TÍTULO Y TEXTO INTRODUCTORIO */}
 
-      <div className="max-w-6xl mx-auto mb-12">
-        <h1 className="mb-4 text-4xl font-extrabold tracking-wider uppercase text-white-fp-300 font-electrolize">
+      <div className="mx-auto mb-12 max-w-7xl">
+        <ScrollFloat>       
+           <h1 className="mb-4 text-4xl font-extrabold tracking-wider uppercase text-white-fp-300 font-electrolize">
           Quienes Somos?
         </h1>
+        </ScrollFloat>
+
+        <ScrollFloat>
         <p className="text-lg leading-relaxed text-white-fp-300 font-inter">
           En Fabio Producciones nos especializamos en ofrecer soluciones
           integrales de audio, iluminación y montaje de escenarios para todo
@@ -48,9 +53,11 @@ const AboutUs = () => {
           cada evento tenga una experiencia visual y sonora única, cuidando cada
           detalle desde la planificación hasta la ejecución.
         </p>
+        </ScrollFloat>
       </div>
 
       {/* 🎯 SECCIÓN DE TARJETAS DE SERVICIO */}
+      <ScrollFloat>
       <div className="grid max-w-6xl grid-cols-1 gap-6 mx-auto md:grid-cols-3">
         {services.map((service, index) => (
           <div
@@ -82,6 +89,7 @@ const AboutUs = () => {
           </div>
         ))}
       </div>
+      </ScrollFloat>
     </section>
   );
 };

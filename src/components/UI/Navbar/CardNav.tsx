@@ -4,6 +4,7 @@ import { gsap } from "gsap";
 import { GoArrowUpRight } from "react-icons/go";
 import Image from "next/image";
 import { ImWhatsapp } from "react-icons/im";
+import { contactsLinks } from "@/helpers/Contacts";
 
 type CardNavLink = {
   label: string;
@@ -46,6 +47,12 @@ const CardNav: React.FC<CardNavProps> = ({
   const navRef = useRef<HTMLDivElement | null>(null);
   const cardsRef = useRef<HTMLDivElement[]>([]);
   const tlRef = useRef<gsap.core.Timeline | null>(null);
+
+  const whatsappNumber = contactsLinks.find((c) => c.socialMedia === "whatsapp")
+    ?.phone[0];
+  const whatsappUrl = whatsappNumber
+    ? `https://wa.me/${whatsappNumber.replace(/\D/g, "")}`
+    : "#";
 
   const calculateHeight = useCallback(() => {
     const navEl = navRef.current;
@@ -204,13 +211,14 @@ const CardNav: React.FC<CardNavProps> = ({
             />
           </div>
 
-          <button
-            type="button"
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             className={`card-nav-cta-button hidden md:inline-flex border-0 rounded-[calc(0.75rem-0.2rem)] px-4 h-full font-medium cursor-pointer transition-colors duration-300 justify-center items-center ${buttonBgColor} ${buttonTextColor}`}
           >
-            <ImWhatsapp className=" size-6" />
-            {/* Contactanos */}
-          </button>
+            <ImWhatsapp className="size-6" />
+          </a>
         </div>
 
         <div

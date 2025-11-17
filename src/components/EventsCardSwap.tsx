@@ -1,10 +1,11 @@
-import React from "react";
 import CardSwap, { Card } from "./UI/CardSwap";
 import Image from "next/image";
+import ScrollFloat from "./UI/ScrollFloat";
 
 const EventsCardSwap = () => {
   return (
     <>
+    <ScrollFloat direction="right">
       <div
         style={{ height: "600px", position: "relative" }}
         className="relative z-10 mb-48 h-[400px] sm:h-[500px] md:h-[550px] lg:h-[600px]"
@@ -87,6 +88,7 @@ const EventsCardSwap = () => {
           </Card>
         </CardSwap>
       </div>
+      </ScrollFloat>
     </>
   );
 };
