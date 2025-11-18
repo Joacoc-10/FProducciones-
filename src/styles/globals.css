@@ -101,8 +101,6 @@ a {
   }
 }
 
-
-
 @layer base {
   * {
     @apply border-border;
@@ -110,4 +108,82 @@ a {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+
+
+/* Estilos para DubleCarousel */
+.double-carousel-container {
+    width: 100%;
+    overflow: hidden; 
+}
+
+/* Estilos para cada fila de carrusel */
+.carousel-wrapper {
+    display: flex;
+    margin: 10px 0; /* Espacio entre el carrusel superior e inferior */
+    width: 100%;
+}
+
+.carousel-track {
+    display: flex;
+    white-space: nowrap; 
+    width: fit-content; 
+    animation-timing-function: linear;
+    animation-iteration-count: infinite; 
+}
+
+/* Estilos de cada elemento (imagen/video) */
+.carousel-item {
+    width: 300px; 
+    height: 200px; 
+    flex-shrink: 0; 
+    margin: 0 10px; 
+    position: relative; 
+    overflow: hidden; 
+    border-radius: 8px; 
+}
+
+.media-wrapper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+/* Asegura que el video ocupe todo el wrapper */
+.media-wrapper video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Animación para el Carrusel Superior (Derecha) */
+.top-row .carousel-track {
+    animation-name: scrollRight;
+    animation-duration: 35s; 
+}
+
+@keyframes scrollRight {
+ 
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(calc(-50% - 10px)); 
+    }
+}
+
+/* Animación para el Carrusel Inferior (Izquierda) */
+.bottom-row .carousel-track {
+    animation-name: scrollLeft;
+    animation-duration: 40s; 
+}
+
+@keyframes scrollLeft {
+    from {
+        transform: translateX(calc(-50% - 10px));
+    }
+    to {
+        transform: translateX(0);
+    }
 }

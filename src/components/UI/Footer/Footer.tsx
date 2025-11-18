@@ -24,7 +24,7 @@ const getIcons = (iconName: string) => {
 const Footer = () => {
   return (
     <footer className="m-4 mt-16 rounded-lg shadow-sm bg-white-fp-300">
-      <div className="w-full p-4 mx-auto max-w-7xl ">
+      <div className="p-4 mx-auto max-w-7xl">
         <div className="flex flex-col items-center justify-between sm:flex-row">
           {/* Logo pequeño */}
           <Link
