@@ -79,7 +79,7 @@ const AboutUs = () => {
 
             {/* 3. Contenido de la Tarjeta (Título) */}
             <div className="absolute inset-0 flex items-center justify-center p-4 font-electrolize">
-              <h2 className="z-10 text-4xl font-black tracking-widest uppercase transition-opacity duration-500 ease-out text-white-fp-100 group-hover:opacity-0">
+              <h2 className="z-10 p-2 text-4xl font-black tracking-widest uppercase transition-opacity duration-500 ease-out border rounded-xl text-white-fp-100 group-hover:opacity-0">
                 {service.title}
               </h2>
             </div>
