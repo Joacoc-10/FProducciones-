@@ -94,9 +94,31 @@ module.exports = {
           800: '#666666',
           900: '#4D4D4D',
         },
-  		}
+  		},
+			rotate: {
+        'y-180': '180deg', 
+      },
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+ plugins: [require("tailwindcss-animate"),
+    function({ addUtilities }) {
+      const newUtilities = {
+        // Estas son las clases que usaremos en el JSX
+        '.perspective-1000': {
+          perspective: '1000px',
+        },
+        '.preserve-3d': {
+          transformStyle: 'preserve-3d',
+        },
+        '.backface-hidden': {
+          backfaceVisibility: 'hidden',
+        },
+				 '.rotate-z-180': {
+          transform: 'rotateZ(180deg)',
+        }
+      }
+      addUtilities(newUtilities, ['responsive']);
+    }
+  ],
 }
 

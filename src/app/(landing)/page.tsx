@@ -1,4 +1,5 @@
 import AboutUs from "@/components/AboutUs";
+import Contact from "@/components/Contact";
 import EventsListSection from "@/components/EventsListSection";
 import Gallery from "@/components/Gallery";
 import Header from "@/components/Header";
@@ -11,7 +12,7 @@ export default function Home() {
   return (
     <>
       {/* Efecto de arcoiris en el mouse */}
-      {/* <SplashCursor /> */}
+      <SplashCursor />
 
       {/* Header */}
       <Navbar />
@@ -22,6 +23,7 @@ export default function Home() {
         <AboutUs />
         <EventsListSection />
         <Gallery />
+        <Contact />
       </TracingBeam>
 
       <Footer />
