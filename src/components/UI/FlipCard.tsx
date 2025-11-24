@@ -93,16 +93,16 @@ const FlipCard: React.FC<FlipCardProps> = ({ service, onClick }) => {
             transform: "rotateY(180deg) translateZ(0.01px)",
           }}
         >
-          <div className="flex flex-col justify-between h-full ">
+          <div className="flex flex-col items-center justify-center text-center items ">
             <div>
               <h3 className="mb-2 text-xl font-semibold text-red-fp-500/90 font-electrolize">
                 {service.title}
               </h3>
-              <p className="mb-4 text-base text-black-fp-900 font-inter">
+              <p className="mt-6 text-base text-black-fp-900 font-inter">
                 {service.shortDescription}
               </p>
             </div>
-            <span className="text-sm font-medium font-inter text-red-fp-600">
+            <span className="absolute text-sm font-medium font-inter text-red-fp-500 bottom-3 right-4 hover:text-red-fp-600">
               Ver detalles →
             </span>
           </div>

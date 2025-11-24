@@ -41,6 +41,7 @@ export const NavbarItems: NavbarItem[] = [
   },
   {
     label: "Contacto",
+    href: Routes.contact,
     bgColor: "bg-red-fp-600/85",
     textColor: "text-white-fp-100",
     links: [

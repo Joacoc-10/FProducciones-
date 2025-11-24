@@ -20,6 +20,9 @@ module.exports = {
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
   		},
+      backgroundImage: {
+        'instagram-gradient': 'linear-gradient(45deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5)',
+      },
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
@@ -115,7 +118,8 @@ module.exports = {
         },
 				 '.rotate-z-180': {
           transform: 'rotateZ(180deg)',
-        }
+        },
+        
       }
       addUtilities(newUtilities, ['responsive']);
     }

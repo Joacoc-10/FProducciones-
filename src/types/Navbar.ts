@@ -11,4 +11,5 @@ export interface NavbarItem {
   bgColor: string;
   textColor: string;
   links: LinkItem[];
+  href?: string
 }

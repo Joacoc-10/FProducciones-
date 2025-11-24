@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <>
       {/* Efecto de arcoiris en el mouse */}
-      <SplashCursor />
+      {/* <SplashCursor /> */}
 
       {/* Header */}
       <Navbar />

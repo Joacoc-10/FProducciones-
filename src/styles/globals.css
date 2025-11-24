@@ -187,3 +187,37 @@ a {
         transform: translateX(0);
     }
 }
+
+
+/* Subrayado del navbar y footer */
+.link-underline {
+  position: relative;
+}
+
+.link-underline::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  transform: scaleX(0);
+  height: 1px;
+  bottom: 0;
+  left: 0;
+  background-color: currentColor;
+  transform-origin: bottom right;
+  transition: transform 0.25s ease-out;
+}
+
+.link-underline:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+/* Sombra de letras negro */
+.shadow-reflector {
+   text-shadow: 0px 10px 10px rgba(0, 0, 0, 0.9);
+}
+
+/* Sombra para titulos blancos */
+.shadow-reflector-white {
+ text-shadow: 0px 10px 10px rgba(80, 79, 79, 0.638);
+}

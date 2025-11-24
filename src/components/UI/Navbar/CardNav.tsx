@@ -17,6 +17,7 @@ export type CardNavItem = {
   bgColor: string;
   textColor: string;
   links: CardNavLink[];
+  href?: string;
 };
 
 export interface CardNavProps {
@@ -236,8 +237,19 @@ const CardNav: React.FC<CardNavProps> = ({
               ref={setCardRef(idx)}
             >
               <div className="nav-card-label font-normal tracking-[-0.5px] text-[18px] md:text-[22px]">
-                {item.label}
+                {item.href ? (
+                  <a
+                    href={item.href}
+                    className="inline-block cursor-pointer link-underline"
+                    aria-label={item.label}
+                  >
+                    {item.label}
+                  </a>
+                ) : (
+                  item.label
+                )}
               </div>
+
               <div className="nav-card-links mt-auto flex flex-col gap-[2px]">
                 {item.links?.map((lnk, i) => (
                   <a
