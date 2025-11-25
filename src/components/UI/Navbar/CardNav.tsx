@@ -216,7 +216,7 @@ const CardNav: React.FC<CardNavProps> = ({
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className={`card-nav-cta-button hidden md:inline-flex border-0 rounded-[calc(0.75rem-0.2rem)] px-4 h-full font-medium cursor-pointer transition-colors duration-300 justify-center items-center ${buttonBgColor} ${buttonTextColor}`}
+            className={`card-nav-cta-button hidden md:inline-flex border-0 rounded-[calc(0.75rem-0.2rem)] px-4 h-full font-medium cursor-pointer transition-colors duration-300 justify-center items-center ${buttonBgColor} ${buttonTextColor} hover:text-black-fp-200`}
           >
             <ImWhatsapp className="size-6" />
           </a>

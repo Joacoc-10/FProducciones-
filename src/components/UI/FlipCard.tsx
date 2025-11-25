@@ -78,7 +78,7 @@ const FlipCard: React.FC<FlipCardProps> = ({ service, onClick }) => {
             className="object-cover"
           />
           <div className="absolute inset-0 flex items-center justify-center p-4 bg-black/50 ">
-            <h3 className="p-2 text-3xl font-black text-white border rounded-xl font-electrolize backdrop-blur-md drop-shadow-lg">
+            <h3 className="p-2 text-2xl font-black text-center text-white uppercase border rounded-xl font-electrolize backdrop-blur-md drop-shadow-lg">
               {service.title}
             </h3>
           </div>

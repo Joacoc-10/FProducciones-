@@ -24,7 +24,7 @@ const Header = () => {
             Tu evento, con el mejor sonido e iluminación.
         </p>
         
-        <a href="#contacto" 
+        <a href="#Contact" 
            className="px-8 py-3 mt-24 font-bold tracking-wider uppercase transition duration-300 rounded-lg shadow-lg bg-red-fp-600 text-white-fp-200 hover:bg-red-fp-700 ">
             Solicitar Presupuesto
         </a>

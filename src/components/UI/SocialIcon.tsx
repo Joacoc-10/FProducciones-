@@ -1,9 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useMemo } from "react";
 import { IconType } from "react-icons";
 import { ImWhatsapp } from "react-icons/im";
 import { BsInstagram } from "react-icons/bs";
 import { AiOutlineMail } from "react-icons/ai";
-import { IContactLinks } from "@/types/Contacts"; 
+import { IContactLinks } from "@/types/Contacts";
 
 const ICON_MAP: { [key in IContactLinks["socialMedia"]]: IconType } = {
   whatsapp: ImWhatsapp,
@@ -12,9 +12,9 @@ const ICON_MAP: { [key in IContactLinks["socialMedia"]]: IconType } = {
 };
 
 const COLOR_MAP: { [key in IContactLinks["socialMedia"]]: string } = {
- whatsapp: "fill-[#25D366]",
+  whatsapp: "fill-[#25D366]",
   instagram: "fill-[url(#instagramGradient)]",
-  email: "fill-[#00BFFF]", 
+  email: "fill-[#00BFFF]",
 };
 
 interface SocialIconProps {
@@ -23,7 +23,10 @@ interface SocialIconProps {
 }
 
 export const SocialIcon = ({ socialMedia, size = 64 }: SocialIconProps) => {
-  const IconComponent = useMemo(() => ICON_MAP[socialMedia] || null, [socialMedia]);
+  const IconComponent = useMemo(
+    () => ICON_MAP[socialMedia] || null,
+    [socialMedia]
+  );
   const color = COLOR_MAP[socialMedia];
 
   if (!IconComponent) return null;
@@ -41,12 +44,9 @@ export const SocialIcon = ({ socialMedia, size = 64 }: SocialIconProps) => {
       )}
 
       <IconComponent
-  size={size}
-  className={`transition-all duration-300 group-hover/pin:fill-white ${color}`}
- />
+        size={size}
+        className={`transition-all duration-300 group-hover/pin:fill-white ${color}`}
+      />
     </div>
   );
 };
-
-
-

@@ -4,4 +4,5 @@ export const Routes = {
   events: "/#Events",
   gallery: "/#Gallery",
   contact: "/#Contact",
+  form_button: "/#FormButton",
 }

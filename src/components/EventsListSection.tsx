@@ -54,7 +54,7 @@ export default function EventsListSection() {
   return (
     <section className="container px-4 py-24 mx-auto max-w-7xl" id="Events">
       <ScrollFloat direction="left">
-        <h1 className="mb-10 text-4xl font-semibold uppercase text-white-fp-300 font-electrolize">
+        <h1 className="mb-10 text-4xl font-semibold text-center uppercase text-white-fp-300 font-electrolize md:text-start">
           Nuestros servicios
         </h1>
       </ScrollFloat>

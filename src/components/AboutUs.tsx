@@ -39,14 +39,14 @@ const AboutUs = () => {
         </ScrollFloat>
 
         <ScrollFloat>
-        <p className="text-lg leading-relaxed text-white-fp-300 font-inter">
+        <p className="text-lg leading-relaxed text-white-fp-400 font-inter">
           En Fabio Producciones nos especializamos en ofrecer soluciones
           integrales de audio, iluminación y montaje de escenarios para todo
           tipo de eventos. Con años de experiencia en el rubro, brindamos un
           servicio profesional, confiable y personalizado, adaptado a las
           necesidades de cada cliente.
         </p>
-        <p className="mt-4 text-lg leading-relaxed text-white-fp-300 font-inter">
+        <p className="mt-4 text-lg leading-relaxed text-white-fp-400 font-inter">
           Contamos con equipamiento de primera calidad y un equipo técnico
           altamente capacitado, garantizando un sonido impecable, iluminación
           profesional y un montaje seguro y estético. Nuestro compromiso es que
