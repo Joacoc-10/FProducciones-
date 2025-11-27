@@ -100,10 +100,7 @@ const Stepper = forwardRef<StepperRef, StepperProps>(function Stepper(
       className="flex min-h-full flex-1 flex-col items-center justify-center p-4 sm:aspect-[4/3] md:aspect-[2/1]"
       {...rest}
     >
-      <div
-        className={`mx-auto w-full max-w-md rounded-4xl shadow-xl ${stepCircleContainerClassName}`}
-        style={{ border: "1px solid #222" }}
-      >
+      <div className="w-full max-w-md mx-auto shadow-xl card-dark rounded-4xl">
         <div
           className={`${stepContainerClassName} flex w-full items-center p-8`}
         >
@@ -159,7 +156,7 @@ const Stepper = forwardRef<StepperRef, StepperProps>(function Stepper(
               {currentStep !== 1 && (
                 <button
                   onClick={handleBack}
-                  className={`duration-350 rounded px-2 py-1 transition ${
+                  className={`duration-350 rounded px-2 py-1 transition font-electrolize ${
                     currentStep === 1
                       ? "pointer-events-none opacity-50 text-neutral-400"
                       : "text-neutral-400 hover:text-neutral-700"
@@ -169,13 +166,24 @@ const Stepper = forwardRef<StepperRef, StepperProps>(function Stepper(
                   {backButtonText}
                 </button>
               )}
-              {currentStep !== totalSteps && (
+              {currentStep !== totalSteps ? (
                 <button
                   onClick={handleNext}
-                  className="duration-350 flex items-center justify-center rounded-full bg-green-500 py-1.5 px-3.5 font-medium tracking-tight text-white transition hover:bg-green-600 active:bg-green-700"
+                  className="duration-350 flex items-center justify-center rounded-full bg-red-fp-600 py-1.5 px-3.5 font-medium tracking-tight text-white transition hover:bg-red-fp-700 active:bg-red-fp-700 font-electrolize"
                   {...nextButtonProps}
                 >
                   {nextButtonText}
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    if (typeof onFinalStepCompleted === "function") {
+                      onFinalStepCompleted();
+                    }
+                  }}
+                  className="duration-350 flex items-center justify-center rounded-full bg-red-fp-600 py-1.5 px-3.5 font-medium tracking-tight text-white transition hover:bg-red-fp-700 active:bg-red-fp-700 font-electrolize"
+                >
+                  Solicitar presupuesto
                 </button>
               )}
             </div>
@@ -296,8 +304,8 @@ function StepIndicator({
       <motion.div
         variants={{
           inactive: { scale: 1, backgroundColor: "#222", color: "#a3a3a3" },
-          active: { scale: 1, backgroundColor: "#5227FF", color: "#5227FF" },
-          complete: { scale: 1, backgroundColor: "#5227FF", color: "#3b82f6" },
+          active: { scale: 1, backgroundColor: "#B20000", color: "#5227FF" },
+          complete: { scale: 1, backgroundColor: "#B20000", color: "#3b82f6" },
         }}
         transition={{ duration: 0.3 }}
         className="flex items-center justify-center w-8 h-8 font-semibold rounded-full"
@@ -317,10 +325,10 @@ function StepIndicator({
 function StepConnector({ isComplete }: { isComplete: boolean }) {
   const lineVariants: Variants = {
     incomplete: { width: 0, backgroundColor: "transparent" },
-    complete: { width: "100%", backgroundColor: "#5227FF" },
+    complete: { width: "100%", backgroundColor: "#B20000" },
   };
   return (
-    <div className="relative mx-2 h-0.5 flex-1 overflow-hidden rounded bg-neutral-600">
+    <div className="relative mx-2 h-0.5 flex-1 overflow-hidden rounded bg-neutral-600 ">
       <motion.div
         className="absolute top-0 left-0 h-full"
         variants={lineVariants}
