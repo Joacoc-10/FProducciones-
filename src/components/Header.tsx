@@ -1,3 +1,4 @@
+import Link from "next/link";
 import React from "react"
 
 const Header = () => {
@@ -24,10 +25,10 @@ const Header = () => {
             Tu evento, con el mejor sonido e iluminación.
         </p>
         
-        <a href="#Contact" 
+        <Link href="#FormSection" 
            className="px-8 py-3 mt-24 font-bold tracking-wider uppercase transition duration-300 rounded-lg shadow-lg bg-red-fp-600 text-white-fp-200 hover:bg-red-fp-700 ">
             Solicitar Presupuesto
-        </a>
+        </Link>
     </div>
 </div>
 </>

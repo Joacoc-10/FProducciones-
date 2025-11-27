@@ -26,7 +26,7 @@ const Gallery = () => {
 
   return (
     <>
-      <div className="mx-auto mb-24 max-w-7xl" id="Gallery">
+      <div className="mx-auto max-w-7xl" id="Gallery">
         <ScrollFloat>
           <h1 className="mt-12 text-4xl font-semibold uppercase font-electrolize"> Nuestra galeria</h1>
         </ScrollFloat>

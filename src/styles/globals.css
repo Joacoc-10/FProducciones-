@@ -8,6 +8,12 @@ body {
   overflow-x: hidden;
 }
 
+
+html {
+  scroll-behavior: smooth;
+}
+
+
 body {
   @apply bg-black-fp-500 text-white-fp-300 ;
   -webkit-font-smoothing: antialiased;

@@ -1,5 +1,5 @@
 "use client";
-import React, { useLayoutEffect, useRef, useState, useCallback } from "react";
+import React, { useLayoutEffect, useRef, useState, useCallback, useEffect } from "react";
 import { gsap } from "gsap";
 import { GoArrowUpRight } from "react-icons/go";
 import Image from "next/image";
@@ -73,11 +73,9 @@ const CardNav: React.FC<CardNavProps> = ({
         contentEl.style.position = "static";
         contentEl.style.height = "auto";
 
-        const heightCheck = contentEl.offsetHeight;
-
+        const contentHeight = contentEl.scrollHeight;
         const topBar = 60;
         const padding = 16;
-        const contentHeight = contentEl.scrollHeight;
 
         contentEl.style.visibility = wasVisible;
         contentEl.style.pointerEvents = wasPointerEvents;
@@ -169,6 +167,44 @@ const CardNav: React.FC<CardNavProps> = ({
     if (el) cardsRef.current[i] = el;
   };
 
+  // CIERRE AUTOMÁTICO: scroll, click en link o click fuera
+  useEffect(() => {
+    const handleScroll = () => {
+      if (isExpanded) toggleMenu();
+    };
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) {
+        if (isExpanded) toggleMenu();
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [isExpanded]);
+
+  // Cierra al click en cualquier link
+  useEffect(() => {
+    const links = navRef.current?.querySelectorAll("a");
+    if (!links) return;
+
+    const handleLinkClick = () => {
+      if (isExpanded) toggleMenu();
+    };
+
+    links.forEach((link) => link.addEventListener("click", handleLinkClick));
+
+    return () =>
+      links.forEach((link) =>
+        link.removeEventListener("click", handleLinkClick)
+      );
+  }, [isExpanded]);
+
   return (
     <div
       className={`card-nav-container fixed left-1/2 -translate-x-1/2 w-[90%] max-w-[800px] z-[99] top-[1.2em] md:top-[2em] ${className}`}
@@ -208,7 +244,7 @@ const CardNav: React.FC<CardNavProps> = ({
               className="logo h-[80px] w-auto"
               width={136}
               height={64}
-              priority={true}
+              priority
             />
           </div>
 
@@ -275,3 +311,4 @@ const CardNav: React.FC<CardNavProps> = ({
 };
 
 export default CardNav;
+

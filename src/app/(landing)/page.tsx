@@ -1,7 +1,7 @@
 import AboutUs from "@/components/AboutUs";
 import Contact from "@/components/Contact";
 import EventsListSection from "@/components/EventsListSection";
-import MultiStepForm from "@/components/Form";
+import FormSection from "@/components/FormSection";
 import Gallery from "@/components/Gallery";
 import Header from "@/components/Header";
 import Footer from "@/components/UI/Footer/Footer";
@@ -25,7 +25,7 @@ export default function Home() {
         <EventsListSection />
         <Gallery />
         <Contact />
-        <MultiStepForm/>
+        <FormSection/>
       </TracingBeam>
 
       <Footer />

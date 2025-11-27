@@ -6,7 +6,6 @@ import { AnimatePresence } from "framer-motion";
 import { events } from "@/helpers/Events";
 import { IEvents } from "@/types/Events";
 import EventsModal from "./EventsModal";
-import EventsCardSwap from "./EventsCardSwap";
 import ScrollFloat from "./UI/ScrollFloat";
 import FlipCard from "./UI/FlipCard";
 
@@ -59,11 +58,8 @@ export default function EventsListSection() {
         </h1>
       </ScrollFloat>
 
-      {/* Seccion de cartas moviles con Servicios */}
-      {/* <EventsCardSwap onEventClick={handleOpenService} /> */}
-
       {/* Seccion de las cartas fijas */}
-      <ScrollFloat direction="up">
+      <ScrollFloat direction="right">
         <div
           ref={targetCardsRef}
           className="relative z-20 grid justify-center grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 justify-items-center "
