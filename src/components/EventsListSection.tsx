@@ -46,7 +46,7 @@ export default function EventsListSection() {
   };
 
   const handleClose = () => {
-    setSelectedService(null);
+     setSelectedService(null);
     router.push("/", { scroll: false });
   };
 

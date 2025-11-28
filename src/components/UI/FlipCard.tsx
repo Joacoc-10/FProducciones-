@@ -12,6 +12,7 @@ interface FlipCardProps {
 const FlipCard: React.FC<FlipCardProps> = ({ service, onClick }) => {
   const [isFlipped, setIsFlipped] = useState(false);
 
+
   const handleFlip = () => {
     if (typeof window !== "undefined" && window.innerWidth < 768) {
       setIsFlipped(!isFlipped);
@@ -86,26 +87,27 @@ const FlipCard: React.FC<FlipCardProps> = ({ service, onClick }) => {
 
         {/* --- CARA TRASERA (INFORMACIÓN) --- */}
         <div
-          className="absolute inset-0 w-full h-full p-5 border border-gray-200 rounded-xl backface-hidden bg-white-fp-100"
+          className="absolute inset-0 w-full h-full p-5 rounded-xl backface-hidden bg-black-fp-800"
           style={{
             backfaceVisibility: "hidden",
             zIndex: backZIndex,
             transform: "rotateY(180deg) translateZ(0.01px)",
           }}
         >
-          <div className="flex flex-col items-center justify-center text-center items ">
-            <div>
-              <h3 className="mb-2 text-xl font-semibold text-red-fp-500/90 font-electrolize">
-                {service.title}
-              </h3>
-              <p className="mt-6 text-base text-black-fp-900 font-inter">
-                {service.shortDescription}
-              </p>
-            </div>
-            <span className="absolute text-sm font-medium font-inter text-red-fp-500 bottom-3 right-4 hover:text-red-fp-600">
-              Ver detalles →
-            </span>
+          <div className="absolute top-0 z-20 transform -translate-x-1/2 translate-y-0 left-1/2">
+            <h3 className="px-6 py-2 text-xl font-extrabold tracking-wide uppercase shadow-xl text-black-fp-800 bg-red-fp-600 rounded-b-xl font-electrolize whitespace-nowrap">
+              {service.title}
+            </h3>
           </div>
+
+          <div className="flex flex-col items-center justify-center mt-12 text-center items">
+            <p className="mt-6 text-base font-normal text-white-fp-400 font-inter">
+              {service.shortDescription}
+            </p>
+          </div>
+          <span className="absolute text-sm font-bold font-electrolize text-red-fp-500 bottom-3 right-4 hover:text-red-fp-600">
+            Ver detalles →
+          </span>
         </div>
       </motion.div>
     </div>

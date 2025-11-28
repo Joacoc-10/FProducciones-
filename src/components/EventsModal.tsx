@@ -19,6 +19,7 @@ function EventsModal({ service, onClose }: ServiceModalProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
+        transition={{ duration: 0 }}
       >
         <BackgroundLines
           className="absolute inset-0 w-full h-full bg-black/90 backdrop-blur-lg"
@@ -30,25 +31,31 @@ function EventsModal({ service, onClose }: ServiceModalProps) {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 50, opacity: 0 }}
           transition={{ type: "spring", stiffness: 120, damping: 20 }}
-          className="relative w-full max-w-5xl p-8 overflow-y-auto card-dark rounded-2xl shadow-2xl max-h-[90vh]"
+          className="relative w-full max-w-5xl p-8 pt-20 overflow-y-auto  rounded-2xl shadow-2xl max-h-[90vh] border border-gray-700/50"
         >
+          
+          <motion.h1
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -20, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 120, damping: 20, delay: 0.1 }}
+            className="absolute top-0 left-0 z-20 px-6 py-2 text-3xl font-extrabold tracking-wide text-black transform -translate-y-full rounded-r-lg shadow-xl -translate-x-1/4 bg-red-fp-600 rounded-t-xl font-electrolize"
+          >
+            {service.title}
+          </motion.h1>
+
           {/* Botón Cerrar */}
           <button
             onClick={onClose}
-            className="absolute text-2xl text-gray-500 top-4 right-4 hover:text-red-500"
+            className="absolute z-30 text-2xl text-gray-500 top-4 right-4 hover:text-red-500"
           >
             ✕
           </button>
 
-          {/* Contenido */}
-          <h1 className="mb-4 text-4xl font-extrabold text-red-fp-500/90 font-electrolize">
-            {service.title}
-          </h1>
-
           <h2 className="mb-3 text-2xl font-bold text-white-fp-400 font-electrolize">
             Detalles del Servicio Técnico
           </h2>
-          <p className="mb-6 text-lg text-white-fp-500 font-inter">
+          <p className="mb-6 text-lg text-white-fp-600 font-inter">
             {service.fullDescription}
           </p>
 
@@ -74,13 +81,21 @@ function EventsModal({ service, onClose }: ServiceModalProps) {
             </div>
           )}
 
-          <Link
-            href="#FormSection"
-            onClick={onClose}
-            className="px-8 py-3 mt-24 font-bold tracking-wider uppercase transition duration-300 rounded-lg shadow-lg just bg-red-fp-600 text-white-fp-200 hover:bg-red-fp-700 font-electrolize"
+          {/* Botón de Presupuesto */}
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.3, type: "spring", stiffness: 150, damping: 15 }}
+            className="flex justify-center w-full pt-1 mt-6 "
           >
-            Solicitar Presupuesto
-          </Link>
+            <Link
+              href="#FormSection"
+              onClick={onClose}
+              className="w-full text-center max-w-sm px-6 py-4 font-extrabold tracking-widest uppercase transition duration-300 rounded-xl shadow-2xl bg-red-fp-600 text-white-fp-200 hover:bg-red-fp-700 hover:scale-[1.02] transform focus:outline-none focus:ring-4 focus:ring-red-fp-500/50 font-electrolize"
+            >
+              Solicitar Presupuesto
+            </Link>
+          </motion.div>
         </motion.div>
       </motion.div>
     </>
