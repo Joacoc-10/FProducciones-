@@ -28,8 +28,8 @@ export const NavbarItems: NavbarItem[] = [
     textColor: "text-white-fp-100",
     links: [
       {
-        label: "Nuestros Servicios",
-        ariaLabel: "Nuestros servicios",
+        label: "Nuestros Eventos",
+        ariaLabel: "Nuestros Eventos",
         href: Routes.events,
       },
       {
