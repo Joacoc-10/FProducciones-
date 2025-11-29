@@ -2,7 +2,6 @@ import { BackgroundLines } from "@/components/UI/background-lines";
 import InfiniteScrollGallery from "@/components/UI/InfiniteScrollGallery";
 import Navbar from "@/components/UI/Navbar/Navbar";
 import { events } from "@/helpers/Events";
-import { IEvents } from "@/types/Events";
 import { notFound } from "next/navigation";
 
 interface EventDetailPageProps {
@@ -15,12 +14,12 @@ export async function generateStaticParams() {
   }));
 }
 
-export default async function EventDetailPage({ params }: EventDetailPageProps) {
+export default async function EventDetailPage({
+  params,
+}: EventDetailPageProps) {
   const { slug } = await params;
 
-  console.log("SLUG RECIBIDO:", slug);
-
-  const service: IEvents | undefined = events.find(
+  const service = events.find(
     (s) => s.id.toLowerCase() === decodeURIComponent(slug).toLowerCase()
   );
 
@@ -75,4 +74,3 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
     </BackgroundLines>
   );
 }
-
