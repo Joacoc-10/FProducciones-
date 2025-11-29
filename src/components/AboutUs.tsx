@@ -76,7 +76,7 @@ const AboutUs = () => {
               className="object-cover w-full h-full transition-transform duration-700 ease-out group-hover:scale-105"
             />
 
-            {/* 2. Overlay que Desaparece (Efecto de Difuminado) */}
+            {/* 2. Overlay que Desaparece (Efecto de Difuminado)*/}
             <div className={OVERLAY_CLASS} aria-hidden="true"></div>
 
             {/* 3. Contenido de la Tarjeta (Título) */}

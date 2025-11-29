@@ -31,7 +31,7 @@ export default function MultiStepForm() {
   const handleSubmit = async () => {
     const form = new FormData();
     Object.entries(formData).forEach(([k, v]) => form.append(k, v as string));
-    form.append("access_key", "c6231a8e-d8b8-47aa-922d-511aa807e9f5");
+    form.append("access_key", process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY || "");
     form.append("to", "joacoc-10@hotmail.com");
 
     try {
