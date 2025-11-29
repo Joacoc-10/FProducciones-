@@ -15,7 +15,6 @@ const Header = () => {
     <div className="absolute inset-0 bg-black-fp-500/70"></div>
 
     <div className="relative z-10 flex flex-col items-center justify-center w-full h-full p-4 mt-6 font-electrolize">
-        
         <h1 className="mb-4 text-4xl font-bold text-center md:text-6xl text-white-fp-300 shadow-reflector">
             Fabio Producciones
         </h1>

@@ -1,5 +1,6 @@
 import React from "react";
 import ScrollFloat from "./UI/ScrollFloat";
+import Link from "next/link";
 
 // Datos de las tarjetas
 const services = [
@@ -58,6 +59,7 @@ const AboutUs = () => {
 
       {/* 🎯 SECCIÓN DE TARJETAS DE SERVICIO */}
       <ScrollFloat>
+        <Link href="#Gallery">
       <div className="grid max-w-6xl grid-cols-1 gap-6 mx-auto md:grid-cols-3">
         {services.map((service, index) => (
           <div
@@ -89,6 +91,7 @@ const AboutUs = () => {
           </div>
         ))}
       </div>
+      </Link>
       </ScrollFloat>
     </section>
   );

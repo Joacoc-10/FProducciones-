@@ -53,13 +53,13 @@ export default function EventsListSection() {
   return (
     <section className="container px-4 py-24 mx-auto max-w-7xl" id="Events">
       <ScrollFloat direction="left">
-        <h1 className="mb-10 text-4xl font-semibold text-center uppercase text-white-fp-300 font-electrolize md:text-start">
-          Nuestros servicios
+        <h1 className="mb-10 text-3xl font-semibold uppercase md:text-4xl text-white-fp-300 font-electrolize md:text-start">
+          Eventos
         </h1>
       </ScrollFloat>
 
       {/* Seccion de las cartas fijas */}
-      <ScrollFloat direction="right">
+      <ScrollFloat>
         <div
           ref={targetCardsRef}
           className="relative z-20 grid justify-center grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 justify-items-center "

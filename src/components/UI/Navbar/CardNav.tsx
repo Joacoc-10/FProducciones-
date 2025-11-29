@@ -5,6 +5,7 @@ import { GoArrowUpRight } from "react-icons/go";
 import Image from "next/image";
 import { ImWhatsapp } from "react-icons/im";
 import { contactsLinks } from "@/helpers/Contacts";
+import Link from "next/link";
 
 type CardNavLink = {
   label: string;
@@ -238,6 +239,7 @@ const CardNav: React.FC<CardNavProps> = ({
           </div>
 
           <div className="flex items-center order-1 mt-2 logo-container md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:order-none">
+           <Link href="/">
             <Image
               src={logo}
               alt={logoAlt}
@@ -246,6 +248,7 @@ const CardNav: React.FC<CardNavProps> = ({
               height={64}
               priority
             />
+            </Link>
           </div>
 
           <a
