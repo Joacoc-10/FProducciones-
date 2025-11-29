@@ -6,23 +6,19 @@ import { IEvents } from "@/types/Events";
 import { notFound } from "next/navigation";
 
 interface EventDetailPageProps {
-  params: {
-    slug: string;
-  };
+  params: Promise<{ slug: string }>;
 }
 
-// ✅ Genera las rutas estáticas en build time
 export async function generateStaticParams() {
   return events.map((service) => ({
     slug: service.id.toString(),
   }));
 }
 
-// ✅ Página dinámica para cada evento
-export default async function EventDetailPage({
-  params,
-}: EventDetailPageProps) {
+export default async function EventDetailPage({ params }: EventDetailPageProps) {
   const { slug } = await params;
+
+  console.log("SLUG RECIBIDO:", slug);
 
   const service: IEvents | undefined = events.find(
     (s) => s.id.toLowerCase() === decodeURIComponent(slug).toLowerCase()
@@ -39,14 +35,11 @@ export default async function EventDetailPage({
       <Navbar />
       <main className="min-h-screen px-6 py-48 text-white-fp-100">
         <article className="relative max-w-5xl mx-auto overflow-visible border shadow-xl border-gray-700/50 rounded-2xl">
-          {/* Título como etiqueta pegada a los bordes */}
           <h1 className="absolute top-0 left-0 z-20 px-6 py-2 text-3xl font-extrabold tracking-wide text-black rounded-r-lg rounded-tl-lg shadow-xl bg-red-fp-600 font-electrolize">
             {service.title}
           </h1>
 
-          {/* Contenido del card con padding */}
           <div className="p-8 pt-16">
-            {/* Subtítulo y Descripción */}
             <h2 className="mb-3 text-2xl font-bold text-white-fp-400 font-electrolize">
               Detalles del Servicio Técnico
             </h2>
@@ -54,7 +47,6 @@ export default async function EventDetailPage({
               {service.fullDescription}
             </p>
 
-            {/* Sección de lista */}
             <section className="pt-4 mt-10 border-t border-gray-700/50">
               <h3 className="text-xl font-semibold text-white-fp-400 font-electrolize">
                 La Base de Nuestra Oferta:
@@ -83,3 +75,4 @@ export default async function EventDetailPage({
     </BackgroundLines>
   );
 }
+
