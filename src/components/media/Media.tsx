@@ -1,7 +1,8 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { isIllustrative, type ResolvedMedia } from "@/lib/media-shared";
+import type { ResolvedMedia } from "@/lib/media-shared";
 
+/** Etiqueta de las piezas de galería que no son material real. Solo se usa dentro de la galería. */
 export function IllustrativeTag({ className }: { className?: string }) {
   return (
     <span
@@ -23,9 +24,6 @@ interface MediaProps {
   priority?: boolean;
   className?: string;
   imgClassName?: string;
-  /** Muestra la etiqueta «Ilustrativa» si corresponde */
-  tag?: boolean;
-  tagClassName?: string;
   /** Si no hay recurso, color de luz del placeholder (canales rgb) */
   light?: string;
 }
@@ -37,8 +35,6 @@ export default function Media({
   priority,
   className,
   imgClassName,
-  tag = false,
-  tagClassName,
   light,
 }: MediaProps) {
   const poster = media.kind === "video" ? media.poster : media.src;
@@ -62,9 +58,6 @@ export default function Media({
             background: `radial-gradient(120% 90% at 30% 20%, rgb(${light ?? "229 50 45"} / 0.35), transparent 60%), linear-gradient(160deg, rgb(var(--surface-2)), rgb(var(--bg)))`,
           }}
         />
-      )}
-      {tag && poster && isIllustrative(media.origin) && (
-        <IllustrativeTag className={cn("absolute bottom-3 left-3 z-10", tagClassName)} />
       )}
     </div>
   );

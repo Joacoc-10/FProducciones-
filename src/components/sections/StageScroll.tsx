@@ -8,7 +8,6 @@ import { FrameSequence } from "@/lib/frame-sequence";
 import { getStageFinalUrl, getStageFirstUrl, getStageFrameUrls, getStageStartPositions, stageIndexAt, stageProgressAt, STAGE_FRAMES } from "@/content/stage-frames";
 import { cn } from "@/lib/utils";
 import { ChannelLabel, Led } from "@/components/console/Console";
-import { IllustrativeTag } from "@/components/media/Media";
 
 /** Etapas del montaje: texto genérico, sin medidas ni capacidades. */
 const STAGES = [
@@ -212,7 +211,6 @@ export default function StageScroll() {
             style={{ background: "linear-gradient(to bottom, rgb(var(--bg)) 0, transparent 14%, transparent 86%, rgb(var(--bg)) 100%)" }}
           />
           <div aria-hidden="true" className="absolute inset-0 hidden bg-gradient-to-b from-bg via-bg/10 to-bg wide:block" />
-          <IllustrativeTag className="absolute bottom-3 left-3 z-10 wide:hidden" />
           <div aria-hidden="true" className="absolute inset-0 hidden bg-gradient-to-r from-bg/70 via-bg/10 to-transparent wide:block" />
           <div aria-hidden="true" className="grid-lines absolute inset-0 opacity-30" />
         </div>
@@ -228,7 +226,6 @@ export default function StageScroll() {
         </div>
 
         <div className="wrap relative z-10 order-3 pb-20 wide:pb-14 md:pt-6">
-          <IllustrativeTag className="mb-5 hidden wide:inline-flex" />
           <div className="mb-3 flex items-center justify-between font-mono text-xs uppercase tracking-[0.18em] text-muted">
             <span className="flex items-center gap-2"><Led pulse={animated} /> Estado {String(currentStage + 1).padStart(2, "0")} / {String(STAGES.length).padStart(2, "0")}</span>
             <span aria-hidden="true" className="hidden sm:inline">{animated ? "Seguí bajando" : ""}</span>

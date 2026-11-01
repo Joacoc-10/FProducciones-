@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getGalleryTiles } from "@/lib/media";
-import { ChannelLabel } from "@/components/console/Console";
+import GalleryNotice from "@/components/sections/GalleryNotice";
 import GalleryArchive from "@/components/sections/GalleryArchive";
 
 const title = "Galería audiovisual";
@@ -29,14 +29,7 @@ export default function GaleriaPage() {
         <p data-reveal="fade" className="eyebrow">Galería audiovisual</p>
         <h1 id="galeria-title" data-reveal className="h-section mt-4">Luces, sonido y escenario</h1>
 
-        {hasIllustrative && (
-          <div data-reveal className="mt-8 flex flex-col gap-2 border border-white/10 bg-surface p-4 text-sm text-muted sm:flex-row sm:items-start sm:gap-4">
-            <ChannelLabel channel="AVISO" className="shrink-0">Material conceptual</ChannelLabel>
-            <p>
-              Las piezas rotuladas «Ilustrativa» son conceptuales y <strong className="font-semibold text-text">no son trabajos realizados</strong> por Fabio Producciones. La galería se irá completando con registros de eventos reales.
-            </p>
-          </div>
-        )}
+        {hasIllustrative && <GalleryNotice className="mt-8" />}
 
         <GalleryArchive tiles={tiles} />
       </div>

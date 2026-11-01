@@ -43,7 +43,7 @@ module.exports = {
       animation: {
         meter: "meter 1.6s ease-in-out infinite",
         "hero-in": "hero-in 0.9s cubic-bezier(0.22,1,0.36,1) backwards",
-        "page-in": "page-in 0.6s cubic-bezier(0.22,1,0.36,1) backwards",
+        "page-in": "page-in 0.3s cubic-bezier(0.22,1,0.36,1) backwards",
       },
     },
   },
@@ -51,5 +51,10 @@ module.exports = {
     // Pantallas anchas y apaisadas: el visual 16:9 puede ocupar toda la sección.
     // Variante propia (no `screens`: una pantalla raw rompe las variantes max-*).
     ({ addVariant }) => addVariant("wide", "@media (min-width: 768px) and (min-aspect-ratio: 5/4)"),
+    // Menú de la navbar: distribuciones más compactas cuando la altura disponible es corta.
+    ({ addVariant }) => addVariant("short", "@media (max-height: 640px), (max-width: 767px) and (max-height: 900px)"),
+    ({ addVariant }) => addVariant("tight", "@media (max-width: 767px) and (orientation: portrait) and (max-height: 700px)"),
+    ({ addVariant }) => addVariant("cramped", "@media (max-width: 767px) and (orientation: portrait) and (max-height: 560px)"),
+    ({ addVariant }) => addVariant("land", "@media (orientation: landscape) and (max-height: 560px)"),
   ],
 };

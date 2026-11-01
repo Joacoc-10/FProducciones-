@@ -7,9 +7,9 @@ import { isDataConstrained, prefersReducedMotion } from "@/lib/gsap";
 import type { GalleryTile } from "@/lib/media-shared";
 import { cn } from "@/lib/utils";
 import { IllustrativeTag } from "@/components/media/Media";
-import { ChannelLabel } from "@/components/console/Console";
 import { ArrowIcon } from "@/components/ui/Icons";
 import GalleryLightbox from "./GalleryLightbox";
+import GalleryNotice from "./GalleryNotice";
 
 export type { GalleryTile };
 
@@ -101,13 +101,7 @@ export default function Gallery({ tiles }: { tiles: GalleryTile[] }) {
           </div>
         </div>
 
-        {/* Aviso de honestidad: la galería es conceptual hasta tener material propio */}
-        <div data-reveal className="mb-8 flex flex-col gap-2 border border-white/10 bg-surface p-4 text-sm text-muted sm:flex-row sm:items-start sm:gap-4">
-          <ChannelLabel channel="AVISO" className="shrink-0">Material conceptual</ChannelLabel>
-          <p>
-            Estas piezas son ilustrativas y <strong className="font-semibold text-text">no son trabajos realizados</strong> por Fabio Producciones. La galería se irá completando con registros de eventos reales.
-          </p>
-        </div>
+        <GalleryNotice className="mb-8" />
 
         <p className="sr-only" role="status" aria-live="polite">
           Mostrando {visible.length} {visible.length === 1 ? "pieza" : "piezas"}.

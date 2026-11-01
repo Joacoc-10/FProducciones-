@@ -12,6 +12,9 @@ import type { MediaEntry, MediaFallback } from "./media";
  * Para pasar una pieza a real: guardar el archivo en `public/media/real/...`,
  * apuntar `file` allí y cambiar `origin` a "authentic".
  */
+/** Aviso único de la galería (portada y /galeria). */
+export const galleryNotice = "Las imágenes marcadas como «Ilustrativa» fueron generadas con IA.";
+
 export interface GalleryItem {
   entry: MediaEntry;
   /**

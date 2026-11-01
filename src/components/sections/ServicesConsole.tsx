@@ -28,7 +28,7 @@ export default function ServicesConsole() {
                 style={{ "--lvl": s.level } as CSSProperties}
                 className="spot group relative flex min-h-[22rem] overflow-hidden border border-white/10 bg-bg p-6 md:p-8"
               >
-                {media.src && <Media media={media} sizes="(min-width: 1024px) 33vw, 100vw" tag className="opacity-30" />}
+                {media.src && <Media media={media} sizes="(min-width: 1024px) 33vw, 100vw" className="opacity-30" />}
                 <div className="relative z-10 flex flex-1 flex-col">
                   <ChannelLabel channel={s.channel}>{s.id === "escenario" ? "Escenario" : s.title}</ChannelLabel>
                   <h3 className="mt-6 text-5xl font-extrabold md:text-6xl">{s.title}</h3>

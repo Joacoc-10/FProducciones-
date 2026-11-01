@@ -41,7 +41,7 @@ export default async function EventPage({ params }: Props) {
   return (
     <article style={{ "--light": ev.light } as CSSProperties}>
       <header className="grain relative flex min-h-[78svh] items-end overflow-hidden">
-        <Media media={media} sizes="100vw" priority light={ev.light} tag tagClassName="!bottom-auto !left-auto right-4 top-24" />
+        <Media media={media} sizes="100vw" priority light={ev.light} />
         <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-bg via-bg/50 to-bg/30" />
         <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(70%_60%_at_20%_100%,rgb(var(--light)/0.28),transparent_70%)]" />
         <div className="wrap relative z-10 pb-16 pt-40 md:pb-24">

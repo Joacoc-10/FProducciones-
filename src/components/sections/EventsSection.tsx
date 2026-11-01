@@ -1,10 +1,10 @@
-import Link from "next/link";
 import type { CSSProperties } from "react";
 import { events } from "@/content/events";
 import { getMedia } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import Media from "@/components/media/Media";
 import { ArrowIcon } from "@/components/ui/Icons";
+import EventCardLink from "./EventCardLink";
 
 const spans = [
   "lg:col-span-7",
@@ -33,7 +33,8 @@ export default function EventsSection() {
             const media = getMedia(ev.mediaId);
             return (
               <li key={ev.slug} data-reveal className={cn(spans[i], i === 0 && "md:col-span-2")}>
-                <Link
+                <EventCardLink
+                  heroSrc={media.src}
                   href={`/eventos/${ev.slug}`}
                   style={{ "--light": ev.light } as CSSProperties}
                   className="spot group relative block h-[26rem] overflow-hidden border border-white/10 md:h-[30rem] lg:h-[34rem]"
@@ -42,8 +43,6 @@ export default function EventsSection() {
                     media={media}
                     sizes="(min-width: 1024px) 50vw, 100vw"
                     light={ev.light}
-                    tag
-                    tagClassName="!bottom-auto !left-auto right-3 top-3"
                     imgClassName="transition-transform duration-[900ms] ease-out group-hover:scale-105"
                   />
                   <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent" />
@@ -62,7 +61,7 @@ export default function EventsSection() {
                       <ArrowIcon className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1.5" />
                     </span>
                   </div>
-                </Link>
+                </EventCardLink>
               </li>
             );
           })}

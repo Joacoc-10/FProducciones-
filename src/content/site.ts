@@ -23,6 +23,32 @@ export const navLinks = [
   { label: "Contacto", href: "/#presupuesto" },
 ] as const;
 
+/** Tarjetas del menú desplegable de la navbar. Los enlaces externos (WhatsApp, Instagram, email) se agregan en el componente. */
+export const navCards = [
+  {
+    channel: "CH 01",
+    title: "Explorá",
+    links: [
+      { label: "Eventos", href: "/#eventos" },
+      { label: "Servicios", href: "/#servicios" },
+      { label: "Escenario", href: "/#escenario" },
+    ],
+  },
+  {
+    channel: "CH 02",
+    title: "Galería",
+    links: [
+      { label: "En portada", href: "/#galeria" },
+      { label: "Galería completa", href: "/galeria" },
+    ],
+  },
+  {
+    channel: "CH 03",
+    title: "Contacto",
+    links: [{ label: "Presupuesto", href: "/#presupuesto" }],
+  },
+] as const;
+
 /** Muestra un número E.164 uruguayo como +598 98 067 306. */
 export function formatPhone(e164: string): string {
   const m = e164.match(/^\+598(\d{2})(\d{3})(\d{3})$/);

@@ -52,26 +52,70 @@ test.describe("landing", () => {
 });
 
 test.describe("navegación", () => {
-  test("enlace de saltar al contenido y navegación por teclado", async ({ page, isMobile }) => {
+  test("enlace de saltar al contenido y teclado: el menú abre, atrapa foco y Escape lo cierra", async ({ page, isMobile }) => {
     test.skip(isMobile, "El teclado se prueba en escritorio");
     await page.goto("/");
     await page.keyboard.press("Tab");
     await expect(page.getByRole("link", { name: /saltar al contenido/i })).toBeFocused();
-    await page.keyboard.press("Tab"); // logo
+    const toggle = page.locator('button[aria-controls="menu-principal"]'); // su nombre cambia entre «Abrir» y «Cerrar menú»
+    await page.keyboard.press("Tab"); // hamburguesa, luego logo
+    await expect(toggle).toBeFocused();
     await page.keyboard.press("Tab");
-    await expect(page.getByRole("navigation", { name: "Principal" }).getByRole("link").first()).toBeFocused();
+    await expect(page.getByRole("link", { name: /ir al inicio/i }).first()).toBeFocused();
+    await toggle.focus();
+    await page.keyboard.press("Enter");
+    const menu = page.getByRole("navigation", { name: "Principal" });
+    await expect(menu).toBeVisible();
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(menu.getByRole("link").first()).toBeFocused();
+    // El foco no sale del encabezado mientras el menú está abierto
+    for (let i = 0; i < 20; i++) await page.keyboard.press("Tab");
+    expect(await page.evaluate(() => !!document.activeElement?.closest("header"))).toBe(true);
+    await page.keyboard.press("Escape");
+    await expect(menu).toBeHidden();
+    await expect(toggle).toBeFocused();
   });
 
-  test("menú móvil: abre, atrapa foco y cierra con Escape", async ({ page, isMobile }) => {
-    test.skip(!isMobile, "Solo móvil");
+  test("menú: abre, muestra tarjetas, cierra con Escape y devuelve el foco", async ({ page }) => {
     await page.goto("/");
-    const menu = page.getByRole("dialog", { name: "Menú principal" });
+    const menu = page.getByRole("navigation", { name: "Principal" });
     await expect(menu).toBeHidden();
     await page.getByRole("button", { name: /menú/i }).click();
     await expect(menu).toBeVisible();
+    await expect(menu.getByRole("heading", { level: 2 })).toHaveText(["Explorá", "Galería", "Contacto"]);
     await page.keyboard.press("Escape");
     await expect(menu).toBeHidden();
     await expect(page.getByRole("button", { name: /menú/i })).toBeFocused();
+  });
+
+  test("menú: un toque fuera lo cierra y un enlace lo cierra al llegar", async ({ page }) => {
+    await page.goto("/");
+    const menu = page.getByRole("navigation", { name: "Principal" });
+    const toggle = page.getByRole("button", { name: /menú/i });
+    await toggle.click();
+    await expect(menu).toBeVisible();
+    await page.mouse.click(5, page.viewportSize()!.height - 5);
+    await expect(menu).toBeHidden();
+    await toggle.click();
+    await menu.getByRole("link", { name: "Servicios" }).click();
+    await expect(menu).toBeHidden();
+    await expect(page).toHaveURL(/#servicios$/);
+  });
+
+  test("con scroll la barra es translúcida y abierta es sólida", async ({ page }) => {
+    await page.goto("/");
+    const header = page.locator("header").first();
+    const alpha = async () => Number((await header.evaluate((e) => getComputedStyle(e).backgroundColor)).match(/[\d.]+/g)![3] ?? 1);
+    expect(await alpha()).toBe(1);
+    await page.evaluate(() => window.scrollTo(0, 3000));
+    await page.waitForTimeout(500);
+    await page.evaluate(() => window.scrollBy(0, -200)); // subir la muestra
+    await expect(header).toBeInViewport();
+    const a = await alpha();
+    expect(a).toBeGreaterThan(0.7); // translúcida pero claramente visible
+    expect(a).toBeLessThan(1);
+    await page.getByRole("button", { name: /menú/i }).click();
+    await expect.poll(alpha).toBe(1);
   });
 
   test("barra inferior móvil aparece al bajar", async ({ page, isMobile }) => {
@@ -112,14 +156,19 @@ test.describe("páginas de evento", () => {
 });
 
 test.describe("galería", () => {
-  test("todas las piezas no auténticas están rotuladas y avisan que no son trabajos reales", async ({ page }) => {
+  test("las piezas no auténticas de la portada están rotuladas y el aviso es el breve", async ({ page }) => {
     await page.goto("/");
     const gallery = page.locator("#galeria");
-    await expect(gallery).toContainText(/no son trabajos realizados/i);
+    await expect(gallery.getByText("Las imágenes marcadas como «Ilustrativa» fueron generadas con IA.", { exact: true })).toBeVisible();
+    await expect(gallery).not.toContainText(/completando|no son trabajos realizados/i);
     const tiles = gallery.locator("ul > li");
     const n = await tiles.count();
     expect(n).toBeGreaterThan(0);
-    for (let i = 0; i < n; i++) await expect(tiles.nth(i)).toContainText(/ilustrativa/i);
+    for (let i = 0; i < n; i++) {
+      const real = (await tiles.nth(i).getByRole("button").getAttribute("aria-label"))?.match(/Murga sobre|Espectáculo de murga/);
+      if (real) await expect(tiles.nth(i)).not.toContainText(/ilustrativa/i);
+      else await expect(tiles.nth(i)).toContainText(/ilustrativa/i);
+    }
   });
 
   test("visor accesible: abre, navega con flechas, cierra con Escape y devuelve el foco", async ({ page, isMobile }) => {
@@ -246,11 +295,14 @@ test.describe("footer y firma", () => {
     expect(await rotate(true)).toBe("none");
   });
 
-  test("los avisos «Ilustrativa» siguen en las secciones con imágenes conceptuales", async ({ page }) => {
+  test("«Ilustrativa» solo aparece en la galería: ni hero, ni eventos, servicios o escenario", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("#eventos")).toContainText(/ilustrativa/i);
-    await expect(page.locator("#escenario")).toContainText(/ilustrativa/i);
-    await expect(page.locator("#galeria")).toContainText(/no son trabajos realizados/i);
+    for (const sel of ["section[aria-labelledby=hero-title]", "#eventos", "#servicios", "#escenario", "#presupuesto"]) {
+      await expect(page.locator(sel)).not.toContainText(/ilustrativa/i);
+    }
+    await expect(page.locator("#galeria")).toContainText(/ilustrativa/i);
+    await page.goto("/eventos/bodas");
+    await expect(page.locator("article")).not.toContainText(/ilustrativa/i);
   });
 });
 
@@ -306,4 +358,24 @@ test("las fotos reales de murga en /galeria no llevan «Ilustrativa» y tienen c
   for (let i = 0; i < 2; i++) await expect(tiles.nth(i)).not.toContainText(/ilustrativa/i);
   await tiles.first().getByRole("button").click();
   await expect(page.getByRole("dialog", { name: "Visor de la galería" })).toContainText("Emilio Fotografía");
+});
+
+test.describe("etiqueta y aviso en /galeria y su visor", () => {
+  test("aviso breve único; el visor rotula las ilustrativas y no las reales", async ({ page }) => {
+    await page.goto("/galeria");
+    await expect(page.getByText("Las imágenes marcadas como «Ilustrativa» fueron generadas con IA.", { exact: true })).toBeVisible();
+    await expect(page.locator("section")).not.toContainText(/completando|no son trabajos realizados/i);
+    const dlg = page.getByRole("dialog", { name: "Visor de la galería" });
+
+    await page.getByRole("button", { name: "Fotos", exact: true }).click();
+    const illustrative = page.locator("section ul > li").filter({ hasText: /ilustrativa/i }).first();
+    await illustrative.getByRole("button").click();
+    await expect(dlg).toContainText(/ilustrativa/i);
+    await page.keyboard.press("Escape");
+
+    const real = page.locator("section ul > li").filter({ has: page.getByRole("button", { name: /Ampliar imagen: Murga sobre/ }) }).first();
+    await real.getByRole("button").click();
+    await expect(dlg).toBeVisible();
+    await expect(dlg).not.toContainText(/ilustrativa/i);
+  });
 });
