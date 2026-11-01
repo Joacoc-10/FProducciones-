@@ -1,113 +1,81 @@
-import type { Metadata } from "next";
-import { Electrolize, Inter } from "next/font/google";
-import "../styles/reset.css";
+import type { Metadata, Viewport } from "next";
+import { Barlow_Condensed, Inter, JetBrains_Mono } from "next/font/google";
 import "../styles/globals.css";
+import { site } from "@/content/site";
+import SmoothScroll from "@/components/motion/SmoothScroll";
+import MotionRoot from "@/components/motion/MotionRoot";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import BottomBar from "@/components/layout/BottomBar";
 
-const electrolize = Electrolize({
+const display = Barlow_Condensed({
   subsets: ["latin"],
-  weight: "400",
-  variable: "--font-electrolize",
+  weight: ["600", "700", "800"],
+  variable: "--font-display",
+  display: "swap",
+});
+const body = Inter({ subsets: ["latin"], variable: "--font-body", display: "swap" });
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-mono",
+  display: "swap",
 });
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
-
-const baseUrl = "https://www.fabio_producciones.vercel.com";
+const title = "Fabio Producciones | Sonido, luces y escenario para eventos";
 
 export const metadata: Metadata = {
-  // 1. SEO Básico (Motores de Búsqueda)
-  title:
-    "Fabio Producciones | Audio, Luces y Escenario Profesional para Eventos",
-  description:
-    "Servicios de alquiler y montaje de **sonido profesional**, **iluminación espectacular** y **escenarios modulares** para bodas, conciertos y eventos corporativos. Calidad y experiencia garantizadas.",
-  keywords: [
-    "Audio Profesional",
-    "Alquiler de Luces para Eventos",
-    "Montaje de Escenarios",
-    "Sonido para Bodas",
-    "Producción de Eventos",
-    "Servicios Audiovisuales",
-    "Alquiler de sonido para eventos Uruguay",
-    "Alquiler de luces para fiestas Maldonado",
-    "Sonido profesional para fiestas",
-    "Servicios de audio e iluminación",
-    "Escenario en alquiler Maldonado",
-    "Producción de eventos Maldonado",
-    "Alquiler de equipos de sonido profesional",
-    "Luces y sonido para bodas",
-    "Audio e iluminación para eventos corporativos",
-    "Alquiler de tarimas para eventos",
-    "Empresas de sonido en Maldonado",
-    "Montaje de escenario para shows",
-    "Alquiler de luces robóticas",
-    "Técnico de sonido para eventos",
-    "Alquiler de parlantes Maldonado",
-    "Servicio de DJ e iluminación",
-    "Audio y luces para cumpleaños de 15",
-    "Proveedores audiovisuales para eventos",
-    "Iluminación espectacular para fiestas",
-  ],
-  authors: [{ name: "Fabio Producciones" }],
-  creator: "Fabio Producciones",
-
-  // 2. Open Graph (Compartir en Facebook, WhatsApp, LinkedIn, etc.)
+  metadataBase: new URL(site.url),
+  title: { default: title, template: "%s | Fabio Producciones" },
+  description: site.description,
+  applicationName: site.name,
+  authors: [{ name: site.name }],
+  alternates: { canonical: "/" },
   openGraph: {
-    title: "Fabio Producciones | Soluciones Audiovisuales de Alto Nivel",
-    description:
-      "Servicios completos de sonido, iluminación y estructuras para eventos inolvidables.",
-    url: baseUrl,
-    siteName: "Fabio Producciones",
-    images: [
-      {
-        url: "https://ik.imagekit.io/i1pxujmp5t/FProducciones/PHOTO-2025-10-22-20-53-38-Photoroom.png?updatedAt=1761844596278",
-        width: 1200,
-        height: 630,
-        alt: "Equipo de luces y sonido profesional en un evento",
-      },
-    ],
-    locale: "es_ES",
     type: "website",
+    siteName: site.name,
+    locale: site.locale,
+    title,
+    description: site.description,
+    url: "/",
   },
-
-  // 3. Twitter Cards (Compartir en X/Twitter)
-  twitter: {
-    card: "summary_large_image",
-    title: "Fabio Producciones | Llevamos tu Evento al Siguiente Nivel",
-    description:
-      "Sonido, luces y escenarios profesionales para cualquier tipo de celebración.",
-    images: [
-      "https://ik.imagekit.io/i1pxujmp5t/FProducciones/PHOTO-2025-10-22-20-53-38-Photoroom.png?updatedAt=1761844596278",
-    ],
-  },
-
-  // 4. Configuración Adicional
-  metadataBase: new URL(baseUrl), // Establece la base para todas las URLs relativas
-  robots: {
-    index: true,
-    follow: true,
-    nocache: false,
-    googleBot: {
-      index: true,
-      follow: true,
-      noimageindex: false,
-    },
-  },
+  twitter: { card: "summary_large_image", title, description: site.description },
+  robots: { index: true, follow: true },
 };
 
-export default function RootLayout({
-  children,
-  modal,
-}: Readonly<{
-  children: React.ReactNode;
-  modal: React.ReactNode;
-}>) {
+export const viewport: Viewport = {
+  themeColor: "#07070A",
+  colorScheme: "dark",
+};
+
+/** Marca .motion-ok antes del primer pintado (evita el parpadeo de los revelados).
+ *  Si el JS de animación no arranca en 4 s, el contenido se muestra igualmente. */
+const motionGate = `(function(){try{var d=document.documentElement;if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){d.classList.add('motion-ok');setTimeout(function(){if(!window.__motionReady)d.classList.add('motion-failed')},4000)}}catch(e){}})();`;
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={`${electrolize.variable} ${inter.variable}`}>
-        {children}
-        {modal}
+    <html
+      lang="es-UY"
+      suppressHydrationWarning
+      className={`${display.variable} ${body.variable} ${mono.variable}`}
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: motionGate }} />
+        <noscript>
+          <style>{`.motion-ok [data-reveal]{opacity:1!important;transform:none!important}`}</style>
+        </noscript>
+      </head>
+      <body>
+        <a href="#contenido" className="skip-link">Saltar al contenido</a>
+        <SmoothScroll>
+          <Navbar />
+          <main id="contenido" tabIndex={-1} className="outline-none">
+            {children}
+          </main>
+          <Footer />
+          <BottomBar />
+          <MotionRoot />
+        </SmoothScroll>
       </body>
     </html>
   );
