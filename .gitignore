@@ -45,3 +45,6 @@ next-env.d.ts
 /test-results/
 /playwright-report/
 !.env.example
+
+# respaldos locales de medios
+/media-backup/
