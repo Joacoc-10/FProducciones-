@@ -16,6 +16,7 @@ const jsonLd = {
   "@type": "LocalBusiness",
   name: site.name,
   url: site.url,
+  logo: `${site.url}/brand/logo-original-trim.png`,
   description: site.description,
   telephone: site.whatsapp[0],
   email: site.email,

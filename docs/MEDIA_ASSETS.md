@@ -11,6 +11,19 @@
 - Cuando llegue material real, se guarda en `public/media/real/...` y se cambia el `origin` a `authentic` de esa entrada.
 - **Prioridad:** P0 = bloquea el impacto visual principal · P1 = importante · P2 = mejora.
 
+## Logo (identidad oficial)
+
+El logo oficial es el de la versión anterior de la web (PNG con transparencia, 1280×853, que estaba alojado en ImageKit como `PHOTO-2025-10-22-20-53-38-Photoroom.png` y se usaba en la navbar, el footer y la imagen OG de `main`). **No se rediseña ni se reemplaza por un isotipo.**
+
+| Archivo (`public/brand/`) | Qué es | Uso |
+|---|---|---|
+| `logo-original.png` | Copia **byte a byte** del original (sha256 `607a9429…cf33`) | Archivo de referencia; no se modifica |
+| `logo-original-trim.png` | Recorte exacto de los márgenes transparentes (1098×498), sin recolorear | Fondos claros, JSON-LD (`logo`) |
+| `logo-dark.png` | Misma forma y proporciones (2,205:1); solo el **negro pasa a blanco cálido** `#F2EFEA` para leerse sobre fondo oscuro; el rojo se conserva | Archivo maestro para fondo oscuro |
+| `logo-dark-480.png` | `logo-dark` a 480 px de ancho, paleta optimizada (≈19 KB) | Navbar y footer (se sirve sin recompresión) |
+
+Las variantes se regeneran con `node scripts/make-logo-variants.mjs` a partir del original (separa cada píxel en mezcla rojo/negro y recompone con blanco; el alfa no se toca). Navbar: alto 48 px (móvil) / 56 px (≥ sm) dentro de la barra de 72 px. Footer: 64 px. También aparece en la imagen OG (`app/opengraph-image`).
+
 ## Prefijo de estilo común (anteponer a todos los prompts de imagen)
 
 ```
@@ -32,7 +45,8 @@ Luz por evento (sustituir el acento carmesí): bodas = warm amber `#E8A857`; cum
 | `service.audio` / `.luces` / `.escenario` | Servicios | `media/ai/services/{audio,luces,escenario}.jpg` | ⏳ opcional — sin imagen, la tarjeta funciona sin fondo |
 | `gallery.concept-01` … `06` | Galería (conceptual) | `media/ai/gallery/concept-0N.jpg` | ⏳ pendiente — se usan fotos actuales rotuladas «Ilustrativa» |
 | `gallery.video-01` / `video-02` | Galería (videos) | `media/video/gallery-01.mp4`, `gallery-02.mp4` | ⏳ opcional — se usan videos actuales (1,2 MB y 0,9 MB) rotulados |
-| `brand.logo-light` | Navbar / footer / OG | `brand/logo-light.svg` | ⏳ cliente — se usa wordmark tipográfico |
+| `brand.logo` | Navbar / footer / OG / JSON-LD | `brand/logo-original.png` (original) + variantes derivadas | ✅ **logo original restaurado** (ver sección «Logo») |
+| `brand.logo-vector` | Mejora futura | `brand/logo.svg` | ⏳ cliente — vectorial del mismo logo (reemplazaría al PNG) |
 | Referencias del escenario | Prompts del escenario | `docs/reference/` | ⏳ cliente — dos capturas |
 
 Fallbacks en uso (provenientes de ImageKit, procedencia **no confirmada**, probable stock):
@@ -161,6 +175,6 @@ Locked-off camera on a portable folding stage in a dark hall. Timelapse-style bu
 
 ## P2 — Pendientes del cliente
 
-- Logo vectorial (`public/brand/logo-light.svg`, versión clara/monocroma para fondo oscuro).
+- Logo vectorial del **mismo** logo original (SVG), para reemplazar al PNG. No se necesita rediseño.
 - Dos capturas de referencia del escenario en `docs/reference/`.
 - Fotos y videos propios de eventos, con permiso de publicación.

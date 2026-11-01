@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { ImageResponse } from "next/og";
 
 export const alt = "Fabio Producciones: tu evento es el show";
@@ -6,6 +8,8 @@ export const contentType = "image/png";
 
 /** Imagen para compartir generada en build (sin depender de archivos externos). */
 export default function OpengraphImage() {
+  // Logo original (variante para fondo oscuro), incrustado como data URL
+  const logo = `data:image/png;base64,${readFileSync(path.join(process.cwd(), "public/brand/logo-dark-480.png")).toString("base64")}`;
   return new ImageResponse(
     (
       <div
@@ -21,14 +25,12 @@ export default function OpengraphImage() {
           backgroundImage: "radial-gradient(circle at 85% 10%, rgba(229,50,45,0.55), rgba(7,7,10,0) 60%)",
         }}
       >
+        <img src={logo} width={300} height={136} alt="" style={{ position: "absolute", top: 64, left: 72 }} />
         <div style={{ display: "flex", fontSize: 28, letterSpacing: 8, color: "#E5322D", textTransform: "uppercase" }}>
           Sonido · Luces · Escenario
         </div>
         <div style={{ display: "flex", fontSize: 150, fontWeight: 800, lineHeight: 0.95, marginTop: 20, textTransform: "uppercase" }}>
           Tu evento es el show.
-        </div>
-        <div style={{ display: "flex", fontSize: 40, marginTop: 28, color: "#A8A39B", textTransform: "uppercase", letterSpacing: 4 }}>
-          Fabio Producciones
         </div>
       </div>
     ),

@@ -192,7 +192,7 @@ docs/         REDESIGN_PLAN.md · MEDIA_ASSETS.md
 **Pendientes (cliente)**
 
 - Email de destino de los pedidos y número de WhatsApp principal.
-- Logo vectorial y variante clara/monocroma (el PNG actual es negro y rojo: no se lee sobre fondo oscuro).
+- Logo vectorial (SVG) del **mismo** logo original. El PNG original ya está restaurado; sobre fondo oscuro se usa una variante derivada que solo cambia el negro por blanco cálido (ver `MEDIA_ASSETS.md`).
 - Dominio definitivo (hoy `fabioproducciones.vercel.app`; configurable con `NEXT_PUBLIC_SITE_URL`).
 - **Confirmar si 5 de las fotos actuales (IMG_7176 y las 4 con nombre UUID) son del cliente:** parecen tomas reales de eventos (consolas, escenarios), pero sin confirmación se tratan como ilustrativas. También tienen personas reconocibles: hace falta permiso de publicación.
 - Confirmar servicios adicionales (DJ, técnicos) y equipamiento mencionable; zona de cobertura.
@@ -226,3 +226,4 @@ docs/         REDESIGN_PLAN.md · MEDIA_ASSETS.md
   - Retirado el código anterior (CardNav, modal interceptado, FlipCard, SplashCursor, LightRays, 3D pin, etc.) y las dependencias `motion`, `tailwindcss-animate`, `class-variance-authority`.
   - **Verificación:** `tsc` y `eslint` limpios; Vitest 14/14; Playwright 44 ok / 4 omitidos a propósito (aplican solo a escritorio o a móvil) en proyectos desktop (1440×900) y móvil (Pixel 7), incluido axe (WCAG 2.2 AA) sin violaciones serias/críticas en `/` y `/eventos/bodas`; Lighthouse móvil (build local, simulación estándar): Performance 100, Accesibilidad 100, Buenas prácticas 100, SEO 100, LCP 0,9 s, CLS 0, TBT 10 ms.
   - **Decisión de rendimiento:** el contenido del hero no usa animación de entrada (ni con opacidad ni con transform): cualquier animación sobre el elemento LCP retrasaba el LCP medido (1,1–1,4 s → 3,8 s simulado). La entrada del hero la da el fundido del video.
+- **2026-11-01 · Corrección de identidad:** el isotipo + texto tipográfico del rediseño **no estaba aprobado** y se eliminó. Se restauró el logo original (el de `main`, ImageKit `PHOTO-2025-10-22-20-53-38-Photoroom.png`) en navbar, footer, imagen OG y JSON-LD, con variante para fondo oscuro que conserva forma y proporciones. La identidad visual se rige por `docs/MEDIA_ASSETS.md § Logo`.

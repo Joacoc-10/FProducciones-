@@ -10,7 +10,7 @@ import { genericWhatsappMessage, waLink } from "@/lib/whatsapp";
 import { useScroll } from "@/components/motion/SmoothScroll";
 import { InstagramIcon, MailIcon, WhatsappIcon } from "@/components/ui/Icons";
 import { ChannelLabel } from "@/components/console/Console";
-import Wordmark from "./Wordmark";
+import Logo from "./Logo";
 
 const SECTION_IDS = ["eventos", "servicios", "escenario", "galeria", "presupuesto"];
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -113,7 +113,7 @@ export default function Navbar() {
         )}
       >
         <div className="wrap flex h-full items-center justify-between gap-6">
-          <Wordmark />
+          <Logo />
 
           <nav aria-label="Principal" className="hidden items-center gap-1 lg:flex">
             {navLinks.map((l) => (

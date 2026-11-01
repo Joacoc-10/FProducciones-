@@ -3,14 +3,14 @@ import { formatPhone, navLinks, site } from "@/content/site";
 import { genericWhatsappMessage, waLink } from "@/lib/whatsapp";
 import { InstagramIcon, MailIcon, WhatsappIcon } from "@/components/ui/Icons";
 import { ChannelLabel } from "@/components/console/Console";
-import Wordmark from "./Wordmark";
+import Logo from "./Logo";
 
 export default function Footer() {
   return (
     <footer className="relative border-t border-white/10 bg-surface pb-28 pt-16 lg:pb-12">
       <div className="wrap grid gap-12 lg:grid-cols-12">
         <div className="lg:col-span-5">
-          <Wordmark />
+          <Logo imgClassName="h-16 sm:h-16" />
           <p className="mt-5 max-w-sm text-muted">
             Sonido profesional, iluminación y escenario portátil para que tu evento sea el show.
           </p>
