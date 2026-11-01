@@ -15,3 +15,13 @@ export interface ResolvedMedia {
 
 /** `true` si el recurso debe llevar la etiqueta «Ilustrativa». */
 export const isIllustrative = (origin: MediaOrigin) => origin !== "authentic";
+
+/** Pieza de galería lista para renderizar (portada y /galeria). */
+export interface GalleryTile extends ResolvedMedia {
+  /** Clases de grilla del mosaico de la portada (vacío si no aparece allí) */
+  span: string;
+  featured?: boolean;
+  /** `object-position` del recorte en el mosaico de la portada */
+  objectPosition?: string;
+  event?: string;
+}

@@ -1,19 +1,17 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { isDataConstrained, prefersReducedMotion } from "@/lib/gsap";
-import type { ResolvedMedia } from "@/lib/media-shared";
+import type { GalleryTile } from "@/lib/media-shared";
 import { cn } from "@/lib/utils";
 import { IllustrativeTag } from "@/components/media/Media";
 import { ChannelLabel } from "@/components/console/Console";
+import { ArrowIcon } from "@/components/ui/Icons";
 import GalleryLightbox from "./GalleryLightbox";
 
-export interface GalleryTile extends ResolvedMedia {
-  span: string;
-  featured?: boolean;
-  event?: string;
-}
+export type { GalleryTile };
 
 type Filter = "all" | "image" | "video";
 const FILTERS: { id: Filter; label: string }[] = [
@@ -143,6 +141,7 @@ export default function Gallery({ tiles }: { tiles: GalleryTile[] }) {
                       aria-hidden="true"
                       fill
                       sizes={t.featured ? "(min-width: 1024px) 66vw, 100vw" : "(min-width: 1024px) 33vw, 50vw"}
+                      style={t.objectPosition ? { objectPosition: t.objectPosition } : undefined}
                       className="object-cover transition-transform duration-[900ms] ease-out group-hover:scale-105"
                     />
                   )
@@ -158,6 +157,17 @@ export default function Gallery({ tiles }: { tiles: GalleryTile[] }) {
             </li>
           ))}
         </ul>
+
+        <div data-reveal className="mt-10 flex justify-center">
+          <Link
+            href="/galeria"
+            className="group relative inline-flex min-h-[56px] items-center gap-3 overflow-hidden border border-white/20 bg-surface px-8 font-display text-xl font-bold uppercase tracking-[0.08em] text-text transition-colors duration-300 hover:border-brand"
+          >
+            <span aria-hidden="true" className="absolute inset-y-0 left-0 w-[3px] bg-brand transition-[width] duration-300 ease-out group-hover:w-full" />
+            <span className="relative">Ver toda la galería</span>
+            <ArrowIcon className="relative h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
+          </Link>
+        </div>
       </div>
 
       <GalleryLightbox tiles={visible} index={active} onIndex={onIndex} />

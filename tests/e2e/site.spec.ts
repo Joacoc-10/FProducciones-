@@ -143,7 +143,7 @@ test.describe("galería", () => {
     await page.goto("/");
     await page.getByRole("button", { name: "Videos", exact: true }).click();
     const n = await page.locator("#galeria ul > li").count();
-    expect(n).toBe(2);
+    expect(n).toBe(1);
   });
 });
 
@@ -277,4 +277,23 @@ test.describe("accesibilidad (axe)", () => {
       expect(bad.map((v) => `${v.id}: ${v.nodes.slice(0, 3).map((n) => n.target.join(" ")).join(" | ")}`)).toEqual([]);
     });
   }
+});
+
+test.describe("galería completa", () => {
+  test("el botón de la portada lleva a /galeria, que filtra por tipo y abre el visor", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("link", { name: /ver toda la galería/i }).click();
+    await expect(page).toHaveURL(/\/galeria$/);
+    const all = await page.locator("section ul > li").count();
+    expect(all).toBeGreaterThan(8);
+    await expect(page.getByRole("button", { name: /Bodas|Corporativos/ })).toHaveCount(0);
+    await page.getByRole("button", { name: "Videos", exact: true }).click();
+    expect(await page.locator("section ul > li").count()).toBe(2);
+    await page.getByRole("button", { name: "Fotos", exact: true }).click();
+    expect(await page.locator("section ul > li").count()).toBe(all - 2);
+    await page.getByRole("button", { name: "Todos", exact: true }).click();
+    expect(await page.locator("section ul > li").count()).toBe(all);
+    await page.locator("section ul > li button").first().click();
+    await expect(page.getByRole("dialog", { name: "Visor de la galería" })).toBeVisible();
+  });
 });

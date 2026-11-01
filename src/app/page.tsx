@@ -1,12 +1,11 @@
-import { galleryItems } from "@/content/gallery";
 import { site } from "@/content/site";
-import { getMedia } from "@/lib/media";
+import { getGalleryTiles, getMedia } from "@/lib/media";
 import Hero from "@/components/sections/Hero";
 import Manifesto from "@/components/sections/Manifesto";
 import EventsSection from "@/components/sections/EventsSection";
 import ServicesConsole from "@/components/sections/ServicesConsole";
 import StageScroll from "@/components/sections/StageScroll";
-import Gallery, { type GalleryTile } from "@/components/sections/Gallery";
+import Gallery from "@/components/sections/Gallery";
 import Process from "@/components/sections/Process";
 import QuoteSection from "@/components/sections/QuoteSection";
 
@@ -24,12 +23,7 @@ const jsonLd = {
 };
 
 export default function Home() {
-  const tiles: GalleryTile[] = galleryItems.map((g) => ({
-    ...getMedia(g.entry.id),
-    span: g.span,
-    featured: g.featured,
-    event: g.event,
-  }));
+  const tiles = getGalleryTiles("home");
 
   return (
     <>

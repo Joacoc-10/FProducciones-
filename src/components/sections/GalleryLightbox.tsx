@@ -7,7 +7,7 @@ import { prefersReducedMotion } from "@/lib/gsap";
 import { useScroll } from "@/components/motion/SmoothScroll";
 import { IllustrativeTag } from "@/components/media/Media";
 import { ArrowIcon, CloseIcon } from "@/components/ui/Icons";
-import type { GalleryTile } from "./Gallery";
+import type { GalleryTile } from "@/lib/media-shared";
 
 interface Props {
   tiles: GalleryTile[];
@@ -100,6 +100,7 @@ export default function GalleryLightbox({ tiles, index, onIndex }: Props) {
                   src={tile.src}
                   poster={tile.poster ?? undefined}
                   controls
+                  autoPlay
                   playsInline
                   preload="none"
                   aria-label={tile.alt}

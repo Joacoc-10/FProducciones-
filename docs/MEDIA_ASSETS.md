@@ -37,6 +37,12 @@ Derivado del isotipo original «FP» (la P y la F del logo oficial, sin las letr
 
 Se regeneran con `node scripts/make-favicons.mjs` (usa `public/brand/logo-original.png`). Si el cliente entrega el isotipo en SVG, reemplazar la fuente del script.
 
+## Galería: cómo agregar una foto o un video
+
+1. Guardar el archivo (fotos en `public/media/ai/gallery/` o `public/media/real/`; videos en `public/media/video/`).
+2. Agregar un objeto a `galleryItems` en `src/content/gallery.ts` (`entry` y, si es un video, opcionalmente `entry.poster` con la ruta del póster).
+3. Listo: aparece en `/galeria` con filtros Todos/Fotos/Videos, visor y rótulo «Ilustrativa» según su `origin`. Solo si se agrega `home: { span, … }` entra también al mosaico de la portada (8 posiciones; el orden del arreglo es el orden visual y `span` es el tamaño de esa posición).
+
 ## Prefijo de estilo común (anteponer a todos los prompts de imagen)
 
 ```

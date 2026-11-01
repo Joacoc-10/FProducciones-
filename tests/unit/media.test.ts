@@ -1,8 +1,10 @@
+import fs from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { mediaEntries } from "@/content/media";
 import { galleryItems } from "@/content/gallery";
 import { events } from "@/content/events";
-import { getMedia, isIllustrative, resolveMedia } from "@/lib/media";
+import { getGalleryTiles, getMedia, isIllustrative, resolveMedia } from "@/lib/media";
 
 const all = [...mediaEntries, ...galleryItems.map((g) => g.entry)];
 
@@ -60,5 +62,33 @@ describe("honestidad de la galería", () => {
 
   it("solo se marcan como auténticas piezas que viven en /media/real/", () => {
     for (const e of all) if (e.origin === "authentic") expect(e.file.startsWith("/media/real/")).toBe(true);
+  });
+});
+
+describe("manifiesto de la galería", () => {
+  it("la portada conserva 8 piezas, con una sola de video, sin duplicados y en el orden definido", () => {
+    const home = getGalleryTiles("home", () => true);
+    expect(home.map((t) => t.id)).toEqual([
+      "gallery.concept-06",
+      "gallery.concept-01",
+      "gallery.concept-02",
+      "gallery.concept-08",
+      "gallery.video-01",
+      "gallery.concept-04",
+      "gallery.concept-05",
+      "gallery.concept-03",
+    ]);
+    expect(home[0].featured).toBe(true);
+    expect(home.filter((t) => t.kind === "video")).toHaveLength(1);
+  });
+
+  it("/galeria incluye todo el manifiesto, incluido lo que no está en la portada", () => {
+    expect(getGalleryTiles("all", () => true)).toHaveLength(galleryItems.length);
+  });
+
+  it("los archivos locales registrados existen en public/", () => {
+    for (const { entry } of galleryItems) {
+      if (entry.kind === "image") expect(fs.existsSync(path.join(process.cwd(), "public", entry.file))).toBe(true);
+    }
   });
 });

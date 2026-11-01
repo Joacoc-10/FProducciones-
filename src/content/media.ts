@@ -23,6 +23,8 @@ export interface MediaEntry {
   file: string;
   /** Variante liviana para móvil (solo video) */
   mobileFile?: string;
+  /** Póster del video (ruta pública). Se usa solo si el archivo existe en build */
+  poster?: string;
   /** Origen del archivo definitivo */
   origin: MediaOrigin;
   alt: string;

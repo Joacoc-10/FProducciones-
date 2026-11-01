@@ -2,7 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { mediaEntries, type MediaEntry } from "@/content/media";
-import type { ResolvedMedia } from "./media-shared";
+import type { GalleryTile, ResolvedMedia } from "./media-shared";
 export type { ResolvedMedia } from "./media-shared";
 export { isIllustrative } from "./media-shared";
 import { galleryItems } from "@/content/gallery";
@@ -21,7 +21,7 @@ export function resolveMedia(entry: MediaEntry, exists: Exists = defaultExists):
       kind: entry.kind,
       src: entry.file,
       mobileSrc: hasMobile ? entry.mobileFile! : null,
-      poster: null,
+      poster: entry.poster && exists(entry.poster) ? entry.poster : null,
       origin: entry.origin,
       alt: entry.alt,
       isFallback: false,
@@ -48,4 +48,21 @@ export function getMedia(id: string, exists?: Exists): ResolvedMedia {
   const entry = registry.get(id);
   if (!entry) throw new Error(`Recurso de media desconocido: ${id}`);
   return resolveMedia(entry, exists);
+}
+
+/**
+ * Piezas de la galería ya resueltas.
+ * - "home": solo las que declaran `home` (mosaico de la portada, en el orden del manifiesto).
+ * - "all": todo el manifiesto (página /galeria).
+ */
+export function getGalleryTiles(scope: "home" | "all", exists?: Exists): GalleryTile[] {
+  return galleryItems
+    .filter((g) => scope === "all" || g.home)
+    .map((g) => ({
+      ...resolveMedia(g.entry, exists),
+      span: g.home?.span ?? "",
+      featured: g.home?.featured,
+      objectPosition: g.home?.objectPosition,
+      event: g.event,
+    }));
 }
