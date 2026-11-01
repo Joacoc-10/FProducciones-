@@ -1,5 +1,5 @@
 import { site } from "@/content/site";
-import { getGalleryTiles, getMedia } from "@/lib/media";
+import { getGalleryTiles } from "@/lib/media";
 import Hero from "@/components/sections/Hero";
 import Manifesto from "@/components/sections/Manifesto";
 import EventsSection from "@/components/sections/EventsSection";
@@ -32,7 +32,7 @@ export default function Home() {
       <Manifesto />
       <EventsSection />
       <ServicesConsole />
-      <StageScroll poster={getMedia("stage.poster")} final={getMedia("stage.final")} video={getMedia("stage.video")} />
+      <StageScroll />
       <Gallery tiles={tiles} />
       <Process />
       <QuoteSection />

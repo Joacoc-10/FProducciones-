@@ -20,6 +20,15 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "ik.imagekit.io", pathname: "/**" },
     ],
   },
+  async headers() {
+    return [
+      {
+        // Los fotogramas se versionan con ?v= (content/stage-frames.ts): caché larga
+        source: "/media/ai/stage/frames/:file*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+    ];
+  },
   async redirects() {
     return [
       ...legacyEventRedirects,

@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { mediaEntries } from "@/content/media";
+import { mediaEntries, type MediaEntry } from "@/content/media";
 import { galleryItems } from "@/content/gallery";
 import { events } from "@/content/events";
 import { getGalleryTiles, getMedia, isIllustrative, resolveMedia } from "@/lib/media";
@@ -33,7 +33,7 @@ describe("registro de medios", () => {
   });
 
   it("sin archivo ni fallback queda como placeholder (sin src)", () => {
-    const entry = mediaEntries.find((e) => e.id === "stage.video")!;
+    const entry: MediaEntry = { id: "x.missing", kind: "video", file: "/media/video/no-existe.mp4", origin: "ai-illustrative", alt: "Video que todavía no existe" };
     const r = resolveMedia(entry, () => false);
     expect(r.src).toBeNull();
     expect(r.origin).toBe("placeholder");

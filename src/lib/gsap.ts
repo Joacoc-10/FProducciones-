@@ -7,6 +7,8 @@ let registered = false;
 export function registerGsap() {
   if (registered || typeof window === "undefined") return;
   gsap.registerPlugin(ScrollTrigger);
+  // La barra de direcciones móvil cambia la altura del viewport al hacer scroll: no recalcular pins por eso
+  ScrollTrigger.config({ ignoreMobileResize: true });
   registered = true;
 }
 

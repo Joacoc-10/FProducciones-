@@ -47,5 +47,9 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // Pantallas anchas y apaisadas: el visual 16:9 puede ocupar toda la sección.
+    // Variante propia (no `screens`: una pantalla raw rompe las variantes max-*).
+    ({ addVariant }) => addVariant("wide", "@media (min-width: 768px) and (min-aspect-ratio: 5/4)"),
+  ],
 };

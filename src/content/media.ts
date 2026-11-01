@@ -67,29 +67,7 @@ export const mediaEntries: MediaEntry[] = [
     fallback: ikVideo("4043976-hd_1920_1080_24fps.mp4"),
   },
 
-  // — Escenario portátil —
-  {
-    id: "stage.poster",
-    kind: "image",
-    file: "/media/ai/stage/stage-poster.jpg",
-    origin: "ai-illustrative",
-    alt: "Ilustración de una plataforma portátil desplegada y vacía",
-  },
-  {
-    id: "stage.final",
-    kind: "image",
-    file: "/media/ai/stage/stage-final.jpg",
-    origin: "ai-illustrative",
-    alt: "Ilustración de un escenario portátil equipado con estructura, sonido y luces encendidas",
-  },
-  {
-    id: "stage.video",
-    kind: "video",
-    file: "/media/video/stage-build.mp4",
-    mobileFile: "/media/video/stage-build-mobile.mp4",
-    origin: "ai-illustrative",
-    alt: "Animación ilustrativa de una plataforma portátil que pasa de vacía a equipada e iluminada",
-  },
+  // El escenario portátil usa una secuencia de fotogramas: ver content/stage-frames.ts
 
   // — Tipos de evento —
   {

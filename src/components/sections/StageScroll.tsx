@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { gsap, registerGsap, ScrollTrigger } from "@/lib/gsap";
+import { gsap, registerGsap } from "@/lib/gsap";
 import { useMotionPrefs } from "@/lib/use-motion-prefs";
-import type { ResolvedMedia } from "@/lib/media-shared";
+import { FrameSequence } from "@/lib/frame-sequence";
+import { getStageFinalUrl, getStageFirstUrl, getStageFrameUrls, getStageStartPositions, stageIndexAt, stageProgressAt, STAGE_FRAMES } from "@/content/stage-frames";
 import { cn } from "@/lib/utils";
 import { ChannelLabel, Led } from "@/components/console/Console";
 import { IllustrativeTag } from "@/components/media/Media";
@@ -18,111 +19,154 @@ const STAGES = [
   { name: "Show", text: "Todo listo: el escenario cobra vida." },
 ] as const;
 
-interface Props {
-  poster: ResolvedMedia;
-  final: ResolvedMedia;
-  video: ResolvedMedia;
-}
+/** Porción del recorrido que se usa para avanzar fotogramas; el resto mantiene el último a la vista. */
+const PLAY_SHARE = 0.92;
+
+/** Recorrido de scroll (% de alto de pantalla) por fotograma. */
+const SCROLL_PER_FRAME = { desktop: 2.8, mobile: 2.2 } as const;
 
 /**
  * Sección destacada del escenario portátil.
- * Modo animado: sección fijada (pin) y progreso de scroll → video (`currentTime`),
- * o, mientras no exista el video definitivo, imágenes / esquemática SVG.
- * Modo estático (reduced-motion, ahorro de datos o sin JS): estado final + lista de etapas.
- * Para incorporar el video definitivo: guardar `public/media/video/stage-build.mp4`
- * (ver docs/MEDIA_ASSETS.md). No hace falta tocar código.
+ * Modo animado: sección fijada (pin) y progreso de scroll → fotograma dibujado en un canvas 2D
+ * (secuencia de WebP en `public/media/ai/stage/frames/`, ver `content/stage-frames.ts`).
+ * Modo estático (reduced-motion, ahorro de datos, sin JS o error de carga): último fotograma + lista de etapas.
  */
-export default function StageScroll({ poster, final, video }: Props) {
+export default function StageScroll() {
   const sectionRef = useRef<HTMLElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const finalRef = useRef<HTMLDivElement>(null);
-  const svgRef = useRef<SVGSVGElement>(null);
+  const visualRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const barRef = useRef<HTMLSpanElement>(null);
 
-  const { reduced, autoplayOk, mobile } = useMotionPrefs();
-  const animated = !reduced;
+  const { autoplayOk, mobile } = useMotionPrefs();
   const [stage, setStage] = useState(0);
-  const [videoReady, setVideoReady] = useState(false);
-  const videoSrc = animated && autoplayOk && video.src ? (mobile && video.mobileSrc ? video.mobileSrc : video.src) : null;
-
-  const hasSchematic = !video.src && !poster.src && !final.src;
+  const [failed, setFailed] = useState(false);
+  const animated = autoplayOk && !failed;
   const staticStage = STAGES.length - 1;
 
-  // Pin + scrub
   useEffect(() => {
     if (!animated) return;
-    registerGsap();
     const section = sectionRef.current;
     const pin = pinRef.current;
-    if (!section || !pin) return;
-
-    // Línea de tiempo de la esquemática (progreso 0–1)
-    const svg = svgRef.current;
-    const tl = gsap.timeline({ paused: true, defaults: { ease: "none" } });
-    if (svg) {
-      const q = (s: string) => svg.querySelectorAll(s);
-      gsap.set(q(".draw"), { strokeDasharray: 1, strokeDashoffset: 1 });
-      gsap.set(q(".fade-in"), { opacity: 0 });
-      tl.to(q(".g-platform .draw"), { strokeDashoffset: 0, duration: 0.2 }, 0)
-        .to(q(".g-truss .draw"), { strokeDashoffset: 0, duration: 0.2 }, 0.2)
-        .to(q(".g-speakers .draw"), { strokeDashoffset: 0, duration: 0.2 }, 0.4)
-        .to(q(".g-lights .fade-in"), { opacity: 1, duration: 0.15, stagger: 0.02 }, 0.6)
-        .to(q(".g-beams .fade-in"), { opacity: 1, duration: 0.2, stagger: 0.03 }, 0.68)
-        .to(q(".g-glow"), { opacity: 1, duration: 0.2 }, 0.8);
+    const visual = visualRef.current;
+    const canvas = canvasRef.current;
+    const ctx2d = canvas?.getContext("2d", { alpha: false });
+    if (!section || !pin || !visual || !canvas || !ctx2d) {
+      queueMicrotask(() => setFailed(true));
+      return;
     }
+    registerGsap();
 
-    const proxy = { t: 0 };
-    let lastStage = -1;
-    const apply = (p: number) => {
-      tl.progress(p);
-      if (barRef.current) barRef.current.style.transform = `scaleX(${p})`;
-      if (finalRef.current) finalRef.current.style.opacity = String(Math.min(1, Math.max(0, (p - 0.55) / 0.35)));
-      const v = videoRef.current;
-      if (v && v.duration && Number.isFinite(v.duration)) {
-        gsap.to(proxy, {
-          t: p * v.duration,
-          duration: 0.3,
-          ease: "power2.out",
-          overwrite: true,
-          onUpdate: () => {
-            v.currentTime = Math.min(v.duration - 0.01, proxy.t);
-          },
-        });
-      }
-      const idx = Math.min(STAGES.length - 1, Math.floor(p * STAGES.length));
-      if (idx !== lastStage) {
-        lastStage = idx;
-        setStage(idx);
-      }
+    const urls = getStageFrameUrls();
+    const last = urls.length - 1;
+    const starts = getStageStartPositions();
+    let current = 0;
+    let exact = false;
+    let raf = 0;
+
+    const draw = () => {
+      raf = 0;
+      const img = seq.get(current) ?? seq.nearest(current);
+      if (!img) return;
+      exact = Boolean(seq.get(current));
+      // "cover": el visual es 16:9 en móvil/vertical y ocupa toda la sección en pantallas anchas
+      const k = Math.max(canvas.width / img.width, canvas.height / img.height);
+      const w = img.width * k;
+      const h = img.height * k;
+      ctx2d.drawImage(img, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
+      canvas.style.opacity = "1";
+    };
+    const requestDraw = () => {
+      if (!raf) raf = requestAnimationFrame(draw);
     };
 
-    const mm = gsap.matchMedia();
-    mm.add(
-      { mobile: "(max-width: 767px)", desktop: "(min-width: 768px)" },
-      (ctx) => {
-        const isMobile = ctx.conditions?.mobile;
-        ScrollTrigger.create({
+    const seq = new FrameSequence(urls, {
+      // Cada fotograma pesa ~0,5 MB y decodificado hasta ~8 MB (escritorio, 1920 px) o ~1 MB (móvil, 640 px).
+      // Escritorio: ventana corta y pocas anclas para acotar memoria. Móvil: decodificados son baratos, así que se
+      // carga más lejos y se retienen más (invertir el scroll no obliga a decodificar de nuevo), con anclas más densas.
+      windowSize: mobile ? 28 : 14,
+      retain: mobile ? 14 : 0,
+      concurrency: mobile ? 3 : 4,
+      constrained: mobile,
+      anchorStep: mobile ? 10 : 20,
+      onFrame: (i) => {
+        // Si se está mostrando un reemplazo aproximado, cualquier fotograma nuevo puede mejorarlo
+        if (!exact || i === current) requestDraw();
+      },
+      onFail: () => setFailed(true),
+    });
+
+    // Resolución del canvas: según el tamaño en pantalla y el dispositivo, sin superar la fuente (1920 px)
+    const resize = () => {
+      const { clientWidth: cw, clientHeight: ch } = visual;
+      if (!cw || !ch) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2);
+      const k = Math.min(1, STAGE_FRAMES.width / (cw * dpr));
+      canvas.width = Math.round(cw * dpr * k);
+      canvas.height = Math.round(ch * dpr * k);
+      ctx2d.imageSmoothingQuality = "high";
+      const cover = Math.max(canvas.width / STAGE_FRAMES.width, canvas.height / STAGE_FRAMES.height);
+      seq.setBitmapWidth(Math.min(STAGE_FRAMES.width, Math.max(640, Math.round(STAGE_FRAMES.width * cover))));
+      requestDraw();
+    };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(visual);
+
+    // No se descarga nada hasta que la sección está cerca del viewport
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        seq.start();
+        io.disconnect();
+      },
+      { rootMargin: "150% 0px" },
+    );
+    io.observe(visual);
+
+    let lastStage = -1;
+    const proxy = { frame: 0 };
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({
+        defaults: { ease: "none" },
+        scrollTrigger: {
           trigger: section,
           start: "top top",
-          end: isMobile ? "+=240%" : "+=320%",
+          end: `+=${Math.round(last * (mobile ? SCROLL_PER_FRAME.mobile : SCROLL_PER_FRAME.desktop))}%`,
           pin,
-          scrub: true,
+          scrub: 0.3,
           anticipatePin: 1,
-          onUpdate: (self) => apply(self.progress),
-        });
-        apply(0);
-      },
-    );
+          invalidateOnRefresh: true,
+        },
+        onUpdate: () => {
+          const frame = Math.round(proxy.frame);
+          if (frame !== current) {
+            current = frame;
+            seq.setFocus(frame);
+            requestDraw();
+          }
+          if (barRef.current) barRef.current.style.transform = `scaleX(${stageProgressAt(frame, starts, last)})`;
+          const idx = stageIndexAt(frame, starts);
+          if (idx !== lastStage) {
+            lastStage = idx;
+            setStage(idx);
+          }
+        },
+      });
+      tl.to(proxy, { frame: last, duration: PLAY_SHARE }).to({}, { duration: 1 - PLAY_SHARE });
+    }, section);
 
     return () => {
-      mm.revert();
-      tl.kill();
+      ctx.revert();
+      io.disconnect();
+      ro.disconnect();
+      cancelAnimationFrame(raf);
+      seq.dispose();
     };
-  }, [animated, videoSrc]);
+  }, [animated, mobile]);
 
-  // En modo estático el esquema se muestra completo
-  const staticVisual = !animated;
+  const finalUrl = getStageFinalUrl();
+  const currentStage = animated ? stage : staticStage;
 
   return (
     <section
@@ -131,79 +175,91 @@ export default function StageScroll({ poster, final, video }: Props) {
       aria-labelledby="escenario-title"
       className="relative border-y border-white/10 bg-bg"
     >
-      <div ref={pinRef} className="relative flex min-h-[100svh] flex-col justify-between overflow-hidden">
+      <div ref={pinRef} className="relative flex min-h-[100svh] flex-col justify-start gap-8 overflow-hidden bg-bg wide:justify-between wide:gap-0">
         {/* Visual (decorativo: el texto equivalente está en la lista de etapas) */}
         <div
+          ref={visualRef}
           role="img"
-          aria-label={`${final.alt}. Etapas: ${STAGES.map((s) => s.name).join(", ")}.`}
-          className="absolute inset-0"
+          aria-label={`${STAGE_FRAMES.alt}. Etapas: ${STAGES.map((s) => s.name).join(", ")}.`}
+          className="relative order-2 aspect-video w-full wide:absolute wide:inset-0 wide:order-none wide:aspect-auto"
         >
           <div
             aria-hidden="true"
             className="absolute inset-0"
             style={{ background: "radial-gradient(90% 70% at 50% 85%, rgb(var(--brand) / 0.22), transparent 65%), rgb(var(--surface))" }}
           />
-          {poster.src && (
-            <Image src={poster.src} alt="" aria-hidden="true" fill sizes="100vw" className="object-cover" />
-          )}
-          {final.src && (
-            <div ref={finalRef} className="absolute inset-0" style={{ opacity: staticVisual ? 1 : 0 }}>
-              <Image src={final.src} alt="" aria-hidden="true" fill sizes="100vw" className="object-cover" />
-            </div>
-          )}
-          {animated && videoSrc && (
-            <video
-              ref={videoRef}
-              src={videoSrc}
-              muted
-              playsInline
-              preload="auto"
+          {/* Estado estático / error: escenario terminado. Animado: primer fotograma hasta que el canvas dibuja */}
+          <Image
+            src={animated ? getStageFirstUrl() : finalUrl}
+            alt=""
+            aria-hidden="true"
+            fill
+            unoptimized
+            sizes="100vw"
+            className="object-cover"
+          />
+          {animated && (
+            <canvas
+              ref={canvasRef}
               aria-hidden="true"
-              tabIndex={-1}
-              onLoadedMetadata={(e) => {
-                e.currentTarget.pause();
-                setVideoReady(true);
-              }}
-              className={cn("absolute inset-0 h-full w-full object-cover transition-opacity duration-700", videoReady ? "opacity-100" : "opacity-0")}
+              className="absolute inset-0 h-full w-full opacity-0 transition-opacity duration-300"
             />
           )}
-          {hasSchematic && <Schematic svgRef={svgRef} complete={staticVisual} />}
-          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-bg via-bg/30 to-bg" />
-          <div aria-hidden="true" className="grid-lines absolute inset-0 opacity-50" />
+          {/* Móvil/vertical: solo se funden los bordes. Ancho: velo para que el texto se lea sobre la foto */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 wide:hidden"
+            style={{ background: "linear-gradient(to bottom, rgb(var(--bg)) 0, transparent 14%, transparent 86%, rgb(var(--bg)) 100%)" }}
+          />
+          <div aria-hidden="true" className="absolute inset-0 hidden bg-gradient-to-b from-bg via-bg/10 to-bg wide:block" />
+          <IllustrativeTag className="absolute bottom-3 left-3 z-10 wide:hidden" />
+          <div aria-hidden="true" className="absolute inset-0 hidden bg-gradient-to-r from-bg/70 via-bg/10 to-transparent wide:block" />
+          <div aria-hidden="true" className="grid-lines absolute inset-0 opacity-30" />
         </div>
 
-        <div className="wrap relative z-10 pt-28 md:pt-32">
+        <div className="wrap relative z-10 order-1 pt-24 md:pt-28 wide:pt-32">
           <ChannelLabel channel="CH 03">Escenario portátil</ChannelLabel>
           <h2 id="escenario-title" className="h-section mt-5 max-w-[14ch]">
             Del piso vacío <span className="text-brand-hi">al show.</span>
           </h2>
-          <p className="mt-5 max-w-md text-text/80">
+          <p className="mt-3 max-w-md text-text/80 md:mt-5">
             Nuestra plataforma portátil y plegable se traslada y se arma donde se hace tu evento.
           </p>
         </div>
 
-        <div className="wrap relative z-10 pb-10 md:pb-14">
-          <IllustrativeTag className="mb-5" />
+        <div className="wrap relative z-10 order-3 pb-20 wide:pb-14 md:pt-6">
+          <IllustrativeTag className="mb-5 hidden wide:inline-flex" />
           <div className="mb-3 flex items-center justify-between font-mono text-xs uppercase tracking-[0.18em] text-muted">
-            <span className="flex items-center gap-2"><Led pulse={animated} /> Estado {String((animated ? stage : staticStage) + 1).padStart(2, "0")} / {String(STAGES.length).padStart(2, "0")}</span>
+            <span className="flex items-center gap-2"><Led pulse={animated} /> Estado {String(currentStage + 1).padStart(2, "0")} / {String(STAGES.length).padStart(2, "0")}</span>
             <span aria-hidden="true" className="hidden sm:inline">{animated ? "Seguí bajando" : ""}</span>
           </div>
-          <div aria-hidden="true" className="h-[2px] w-full bg-white/15">
+          <div aria-hidden="true" className="relative h-[2px] w-full bg-white/15">
             <span
               ref={barRef}
               className="block h-full origin-left bg-brand-hi"
               style={{ transform: animated ? "scaleX(0)" : "scaleX(1)" }}
             />
+            {/* Límite de cada etapa: coincide con el borde izquierdo de su columna (columnas iguales, sin gap) */}
+            {STAGES.map((s, i) => (
+              <span
+                key={s.name}
+                className={cn(
+                  "absolute top-1/2 h-2 w-px -translate-y-1/2 transition-colors duration-300",
+                  i <= currentStage ? "bg-brand-hi" : "bg-white/40",
+                )}
+                style={{ left: `${(i / STAGES.length) * 100}%` }}
+              />
+            ))}
           </div>
-          <ol aria-label="Etapas del montaje" className="mt-5 grid gap-2 sm:grid-cols-5 sm:gap-4">
+          <ol aria-label="Etapas del montaje" className="mt-5 grid gap-2 max-sm:min-h-[7.5rem] sm:grid-cols-5 sm:gap-0">
             {STAGES.map((s, i) => {
-              const current = animated ? i === stage : i === staticStage;
+              const current = i === currentStage;
               return (
                 <li
                   key={s.name}
                   aria-current={animated && current ? "step" : undefined}
                   className={cn(
-                    "border-l-2 pl-3 transition-colors duration-500 sm:min-h-[6rem]",
+                    "border-l-2 pl-3 transition-colors duration-500 sm:min-h-[6rem] sm:pr-4",
                     current ? "border-brand-hi text-text" : "border-white/15 text-muted",
                     // En móvil animado solo se muestra la etapa activa para no tapar el visual
                     animated && !current && "max-sm:hidden",
@@ -219,71 +275,5 @@ export default function StageScroll({ poster, final, video }: Props) {
         </div>
       </div>
     </section>
-  );
-}
-
-/** Esquemática genérica de una plataforma con estructura, sonido y luces (sin medidas). */
-function Schematic({ svgRef, complete }: { svgRef: React.RefObject<SVGSVGElement | null>; complete: boolean }) {
-  const stroke = "rgb(242 239 234 / 0.7)";
-  const common = { fill: "none", stroke, strokeWidth: 1.5, vectorEffect: "non-scaling-stroke" as const };
-  const lightsX = [230, 315, 400, 485, 570];
-  return (
-    <svg
-      ref={svgRef}
-      viewBox="0 0 800 450"
-      preserveAspectRatio="xMidYMid meet"
-      aria-hidden="true"
-      focusable="false"
-      className="absolute inset-x-0 top-[34%] bottom-[30%] h-[36%] w-full"
-    >
-      <defs>
-        <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="rgb(229 50 45)" stopOpacity="0.55" />
-          <stop offset="1" stopColor="rgb(229 50 45)" stopOpacity="0" />
-        </linearGradient>
-        <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0" stopColor="rgb(229 50 45)" stopOpacity="0.45" />
-          <stop offset="1" stopColor="rgb(229 50 45)" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-
-      <g className="g-glow" style={{ opacity: complete ? 1 : 0 }}>
-        <ellipse cx="400" cy="345" rx="330" ry="90" fill="url(#glow)" />
-      </g>
-
-      <g className="g-beams">
-        {lightsX.map((x, i) => (
-          <polygon
-            key={x}
-            className="fade-in"
-            points={`${x - 8},132 ${x + 8},132 ${x + 60 - i * 30},340 ${x - 60 - i * 30},340`}
-            fill="url(#beam)"
-            style={{ opacity: complete ? 1 : 0 }}
-          />
-        ))}
-      </g>
-
-      <g className="g-platform">
-        <path className="draw" pathLength={1} {...common} d="M120 330 H680 L725 380 H75 Z" style={complete ? { strokeDasharray: 1, strokeDashoffset: 0 } : undefined} />
-        <path className="draw" pathLength={1} {...common} d="M75 380 H725 V402 H75 Z" style={complete ? { strokeDasharray: 1, strokeDashoffset: 0 } : undefined} />
-        <path className="draw" pathLength={1} {...common} d="M262 330 L250 380 M400 330 V380 M538 330 L550 380" style={complete ? { strokeDasharray: 1, strokeDashoffset: 0 } : undefined} />
-      </g>
-
-      <g className="g-truss">
-        <path className="draw" pathLength={1} {...common} d="M150 330 V96 M170 330 V96 M630 330 V96 M650 330 V96" style={complete ? { strokeDasharray: 1, strokeDashoffset: 0 } : undefined} />
-        <path className="draw" pathLength={1} {...common} d="M150 96 H650 M150 118 H650 M150 118 L180 96 L210 118 L240 96 L270 118 L300 96 L330 118 L360 96 L390 118 L420 96 L450 118 L480 96 L510 118 L540 96 L570 118 L600 96 L630 118" style={complete ? { strokeDasharray: 1, strokeDashoffset: 0 } : undefined} />
-      </g>
-
-      <g className="g-speakers">
-        <path className="draw" pathLength={1} {...common} d="M62 330 V232 H132 V330 M72 262 H122 M97 300 m-14 0 a14 14 0 1 0 28 0 a14 14 0 1 0 -28 0" style={complete ? { strokeDasharray: 1, strokeDashoffset: 0 } : undefined} />
-        <path className="draw" pathLength={1} {...common} d="M668 330 V232 H738 V330 M678 262 H728 M703 300 m-14 0 a14 14 0 1 0 28 0 a14 14 0 1 0 -28 0" style={complete ? { strokeDasharray: 1, strokeDashoffset: 0 } : undefined} />
-      </g>
-
-      <g className="g-lights">
-        {lightsX.map((x) => (
-          <path key={x} className="fade-in" {...common} d={`M${x - 10} 120 H${x + 10} L${x + 7} 134 H${x - 7} Z`} style={{ opacity: complete ? 1 : 0 }} />
-        ))}
-      </g>
-    </svg>
   );
 }

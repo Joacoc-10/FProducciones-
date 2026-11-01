@@ -57,9 +57,7 @@ Luz por evento (sustituir el acento carmesí): bodas = warm amber `#E8A857`; cum
 |---|---|---|---|
 | `hero.poster` | Hero (póster/fallback) | `media/ai/hero/hero-stage-wide.jpg` | ⏳ pendiente — se usa degradado de luz |
 | `hero.video` | Hero (video principal) | `media/video/hero-loop.mp4` (+ `hero-loop-mobile.mp4`) | ⏳ pendiente — se usa el video actual de ImageKit (stock, 1080p 1,8 MB) |
-| `stage.poster` | Escenario | `media/ai/stage/stage-poster.jpg` | ⏳ pendiente |
-| `stage.final` | Escenario (estado final / reduced-motion) | `media/ai/stage/stage-final.jpg` | ⏳ pendiente |
-| `stage.video` | Escenario (scroll) | `media/video/stage-build.mp4` (+ `stage-build-mobile.mp4`) | ⏳ pendiente — se usa esquemática SVG |
+| Secuencia del escenario | Escenario (scroll) | `media/ai/stage/frames/frame-000…140.webp` (141 × 1920×1080, WebP q92, ~75 MB; sin póster ni imagen alternativa aparte: el estado estático usa `frame-140`) | ✅ cargada — ver `src/content/stage-frames.ts` (reemplazo de fotogramas: `overrides` / `skip` / `version`) |
 | `event.bodas` … `event.espectaculos` (5) | Tarjetas y páginas de evento | `media/ai/events/{slug}-card.jpg` | ⏳ pendiente — se usan fotos actuales (stock) rotuladas |
 | `service.audio` / `.luces` / `.escenario` | Servicios | `media/ai/services/{audio,luces,escenario}.jpg` | ⏳ opcional — sin imagen, la tarjeta funciona sin fondo |
 | `gallery.concept-01` … `06` | Galería (conceptual) | `media/ai/gallery/concept-0N.jpg` | ⏳ pendiente — se usan fotos actuales rotuladas «Ilustrativa» |
