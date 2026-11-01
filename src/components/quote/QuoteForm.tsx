@@ -60,9 +60,12 @@ export default function QuoteForm() {
   // Fecha mínima y evento precargado (?evento=slug)
   useEffect(() => {
     setToday(todayISO());
-    const slug = new URLSearchParams(window.location.search).get("evento");
-    const ev = events.find((e) => e.slug === slug);
+    const params = new URLSearchParams(window.location.search);
+    const ev = events.find((e) => e.slug === params.get("evento"));
     if (ev) setData((d) => ({ ...d, tipoEvento: ev.formLabel }));
+    // ?servicio=audio|luces|escenario (desde las páginas de servicio)
+    const option = { audio: "Audio", luces: "Luces", escenario: "Escenario portátil" }[params.get("servicio") ?? ""];
+    if (option) setData((d) => ({ ...d, servicios: [option] }));
   }, []);
 
   // Foco al encabezado del paso al cambiar

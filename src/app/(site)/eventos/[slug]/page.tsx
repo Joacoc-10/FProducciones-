@@ -4,6 +4,9 @@ import { notFound } from "next/navigation";
 import type { CSSProperties } from "react";
 import { eventBySlug, events } from "@/content/events";
 import { services } from "@/content/services";
+import { servicePageForService } from "@/content/service-pages";
+import { pageMetadata, servicePageJsonLd } from "@/lib/seo";
+import JsonLd from "@/components/seo/JsonLd";
 import { getMedia } from "@/lib/media";
 import { ChannelLabel } from "@/components/console/Console";
 import Media from "@/components/media/Media";
@@ -21,13 +24,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const ev = eventBySlug(slug);
   if (!ev) return {};
-  const title = `${ev.title}: sonido, luces y escenario`;
-  return {
-    title,
-    description: ev.summary,
-    alternates: { canonical: `/eventos/${ev.slug}` },
-    openGraph: { title, description: ev.summary, url: `/eventos/${ev.slug}`, type: "website" },
-  };
+  return pageMetadata({
+    title: ev.seoTitle,
+    description: ev.seoDescription,
+    path: `/eventos/${ev.slug}`,
+    image: getMedia(ev.mediaId).src,
+  });
 }
 
 export default async function EventPage({ params }: Props) {
@@ -40,6 +42,15 @@ export default async function EventPage({ params }: Props) {
 
   return (
     <article style={{ "--light": ev.light } as CSSProperties}>
+      <JsonLd
+        data={servicePageJsonLd({
+          path: `/eventos/${ev.slug}`,
+          name: ev.seoTitle,
+          serviceType: `Sonido, iluminación y escenario portátil para ${ev.title.toLowerCase()}`,
+          description: ev.summary,
+          breadcrumb: [{ name: "Inicio", path: "/" }, { name: "Eventos", path: "/#eventos" }, { name: ev.title, path: `/eventos/${ev.slug}` }],
+        })}
+      />
       <header className="grain relative flex min-h-[78svh] items-end overflow-hidden">
         <Media media={media} sizes="100vw" priority light={ev.light} />
         <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-bg via-bg/50 to-bg/30" />
@@ -61,6 +72,10 @@ export default async function EventPage({ params }: Props) {
           <div className="space-y-6 text-lg text-muted lg:col-span-6">
             <h2 className="h-section text-text">{ev.summary}</h2>
             {ev.body.map((p) => <p key={p}>{p}</p>)}
+            <h3 className="pt-4 text-2xl font-extrabold text-text">Qué conviene contarnos</h3>
+            <ul className="list-disc space-y-2 pl-5 text-base">
+              {ev.planning.map((p) => <li key={p}>{p}</li>)}
+            </ul>
           </div>
 
           <div className="lg:col-span-5 lg:col-start-8">
@@ -69,7 +84,9 @@ export default async function EventPage({ params }: Props) {
               {services.map((s) => (
                 <li key={s.id} className="py-5">
                   <p className="font-mono text-xs uppercase tracking-[0.18em] text-brand-hi">{s.channel}</p>
-                  <h3 className="mt-1 text-3xl font-extrabold">{s.title}</h3>
+                  <h3 className="mt-1 text-3xl font-extrabold">
+                    <Link href={`/servicios/${servicePageForService(s.id).slug}`} className="hover:text-brand-hi">{s.title}</Link>
+                  </h3>
                   <p className="mt-1 text-muted">{s.text}</p>
                 </li>
               ))}

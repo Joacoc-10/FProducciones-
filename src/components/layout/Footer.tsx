@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { formatPhone, navLinks, site } from "@/content/site";
+import { servicePages } from "@/content/service-pages";
 import { genericWhatsappMessage, waLink } from "@/lib/whatsapp";
 import { InstagramIcon, MailIcon, WhatsappIcon } from "@/components/ui/Icons";
 import { ChannelLabel } from "@/components/console/Console";
@@ -24,6 +25,13 @@ export default function Footer() {
             {navLinks.map((l) => (
               <li key={l.href}>
                 <Link href={l.href} className={link}>{l.label}</Link>
+              </li>
+            ))}
+          </ul>
+          <ul aria-label="Servicios" className="mt-1 flex flex-wrap gap-x-4 lg:mt-3 lg:block">
+            {servicePages.map((sp) => (
+              <li key={sp.slug}>
+                <Link href={`/servicios/${sp.slug}`} className={link}>{sp.linkLabel}</Link>
               </li>
             ))}
           </ul>

@@ -2,11 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Barlow_Condensed, Inter, JetBrains_Mono } from "next/font/google";
 import "../styles/globals.css";
 import { site } from "@/content/site";
-import SmoothScroll from "@/components/motion/SmoothScroll";
-import MotionRoot from "@/components/motion/MotionRoot";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import BottomBar from "@/components/layout/BottomBar";
 
 const display = Barlow_Condensed({
   subsets: ["latin"],
@@ -22,25 +17,15 @@ const mono = JetBrains_Mono({
   display: "swap",
 });
 
-const title = "Fabio Producciones | Sonido, luces y escenario para eventos";
-
+/** Layout raíz mínimo: la estructura del sitio (navbar, footer, scroll) vive en (site)/layout.tsx para que la 404 quede independiente.
+ *  Valores por defecto (p. ej. la página 404). Cada página define su canonical, Open Graph y Twitter con pageMetadata(). */
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
-  title: { default: title, template: "%s | Fabio Producciones" },
+  title: { default: "Fabio Producciones | Sonido, luces y escenario para eventos", template: "%s | Fabio Producciones" },
   description: site.description,
   applicationName: site.name,
   authors: [{ name: site.name }],
-  alternates: { canonical: "/" },
-  openGraph: {
-    type: "website",
-    siteName: site.name,
-    locale: site.locale,
-    title,
-    description: site.description,
-    url: "/",
-  },
-  twitter: { card: "summary_large_image", title, description: site.description },
-  robots: { index: true, follow: true },
+  robots: site.indexable ? undefined : { index: false, follow: false },
 };
 
 export const viewport: Viewport = {
@@ -65,18 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <style>{`.motion-ok [data-reveal]{opacity:1!important;transform:none!important}`}</style>
         </noscript>
       </head>
-      <body>
-        <a href="#contenido" className="skip-link">Saltar al contenido</a>
-        <SmoothScroll>
-          <Navbar />
-          <main id="contenido" tabIndex={-1} className="outline-none">
-            {children}
-          </main>
-          <Footer />
-          <BottomBar />
-          <MotionRoot />
-        </SmoothScroll>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

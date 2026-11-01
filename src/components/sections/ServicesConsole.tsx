@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { services } from "@/content/services";
+import { servicePageForService } from "@/content/service-pages";
 import { getMedia } from "@/lib/media";
 import { ChannelLabel, LevelMeter } from "@/components/console/Console";
 import Media from "@/components/media/Media";
@@ -33,11 +34,16 @@ export default function ServicesConsole() {
                   <ChannelLabel channel={s.channel}>{s.id === "escenario" ? "Escenario" : s.title}</ChannelLabel>
                   <h3 className="mt-6 text-5xl font-extrabold md:text-6xl">{s.title}</h3>
                   <p className="mt-4 max-w-xs text-muted">{s.text}</p>
-                  {s.id === "escenario" && (
-                    <Link href="/#escenario" className="mt-auto inline-flex min-h-[44px] items-center pt-6 font-display text-lg font-bold uppercase tracking-[0.08em] text-brand-hi hover:text-text">
-                      Mirá cómo se arma ↓
+                  <div className="mt-auto flex flex-col pt-6">
+                    <Link href={`/servicios/${servicePageForService(s.id).slug}`} className="inline-flex min-h-[44px] items-center font-display text-lg font-bold uppercase tracking-[0.08em] text-brand-hi hover:text-text">
+                      {servicePageForService(s.id).linkLabel} →
                     </Link>
-                  )}
+                    {s.id === "escenario" && (
+                      <Link href="/#escenario" className="inline-flex min-h-[44px] items-center font-display text-lg font-bold uppercase tracking-[0.08em] text-brand-hi hover:text-text">
+                        Mirá cómo se arma ↓
+                      </Link>
+                    )}
+                  </div>
                 </div>
 
                 {/* Fader + medidor decorativos */}

@@ -4,7 +4,18 @@ export const site = {
   tagline: "Tu evento es el show.",
   description:
     "Sonido profesional, iluminación y escenario portátil para bodas, cumpleaños, fiestas, eventos corporativos y espectáculos en Uruguay.",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://fabioproducciones.vercel.app",
+  /** Descripción de la portada para buscadores (la orientación geográfica solo vive en metadatos). */
+  seoDescription:
+    "Alquiler de sonido, luces y escenario portátil para bodas, fiestas de 15, cumpleaños y eventos en Maldonado y Canelones. Tu evento es el show: pedí tu presupuesto.",
+  /** Dominio público confirmado por ahora. Se centraliza acá: si el cliente compra otro, basta con NEXT_PUBLIC_SITE_URL. */
+  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://fabioproducciones.vercel.app").replace(/\/+$/, ""),
+  /**
+   * Indexación: solo en producción. En previews de Vercel (VERCEL_ENV distinto de "production") o con
+   * SITE_NOINDEX=1 se emite noindex y robots.txt bloquea todo. Fuera de Vercel (build local) se permite.
+   */
+  indexable:
+    process.env.SITE_NOINDEX !== "1" &&
+    (process.env.VERCEL_ENV ? process.env.VERCEL_ENV === "production" : true),
   locale: "es_UY",
   /** Primer número = principal (pendiente de confirmar con el cliente). */
   whatsapp: ["+59898067306", "+59899818008"],

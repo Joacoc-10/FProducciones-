@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import { site } from "@/content/site";
+import { organizationJsonLd, pageMetadata } from "@/lib/seo";
+import JsonLd from "@/components/seo/JsonLd";
 import { getGalleryTiles } from "@/lib/media";
 import Hero from "@/components/sections/Hero";
 import Manifesto from "@/components/sections/Manifesto";
@@ -9,25 +12,19 @@ import Gallery from "@/components/sections/Gallery";
 import Process from "@/components/sections/Process";
 import QuoteSection from "@/components/sections/QuoteSection";
 
-/** Solo datos confirmados (nombre, URL, contacto). Sin dirección ni zona hasta que el cliente las confirme. */
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  name: site.name,
-  url: site.url,
-  logo: `${site.url}/brand/logo-original-trim.png`,
-  description: site.description,
-  telephone: site.whatsapp[0],
-  email: site.email,
-  sameAs: [site.instagram.url],
-};
+export const metadata: Metadata = pageMetadata({
+  title: "Alquiler de sonido, luces y escenario",
+  absoluteTitle: "Alquiler de sonido, luces y escenario | Fabio Producciones",
+  description: site.seoDescription,
+  path: "/",
+});
 
 export default function Home() {
   const tiles = getGalleryTiles("home");
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <JsonLd data={organizationJsonLd()} />
       <Hero />
       <Manifesto />
       <EventsSection />

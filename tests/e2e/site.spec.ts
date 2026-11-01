@@ -133,19 +133,45 @@ test.describe("navegación", () => {
   });
 });
 
+test.describe("páginas de servicio", () => {
+  for (const [slug, h1, service, seoTitle = h1] of [
+    ["alquiler-de-sonido", "Alquiler de sonido para eventos", "audio"],
+    ["alquiler-de-luces", "Alquiler de luces para fiestas y eventos", "luces"],
+    ["alquiler-de-escenario-portatil", "Alquiler de escenario portátil", "escenario", "Alquiler de escenario portátil para eventos"],
+  ] as const) {
+    test(`/servicios/${slug}`, async ({ page }) => {
+      await page.goto(`/servicios/${slug}`);
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText(h1);
+      await expect(page).toHaveTitle(new RegExp(`^${seoTitle} \\| Fabio Producciones$`));
+      await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", new RegExp(`/servicios/${slug}$`));
+      await expect(page.getByRole("link", { name: /pedí tu presupuesto/i })).toHaveAttribute("href", `/?servicio=${service}#presupuesto`);
+    });
+  }
+
+  test("el enlace de servicio precarga el formulario", async ({ page }) => {
+    await page.goto("/?servicio=luces#presupuesto");
+    const form = page.locator("#presupuesto form");
+    await form.scrollIntoViewIfNeeded();
+    await form.getByLabel("Boda").check({ force: true });
+    await form.getByLabel("Lugar o ciudad").fill("Maldonado");
+    await form.getByRole("button", { name: /siguiente/i }).click();
+    await expect(form.getByLabel("Luces")).toBeChecked();
+  });
+});
+
 test.describe("páginas de evento", () => {
-  for (const [slug, title] of [
-    ["bodas", "Bodas"],
-    ["cumpleanos-y-15", "Cumpleaños y 15"],
-    ["fiestas-privadas", "Fiestas privadas"],
-    ["corporativos", "Corporativos"],
-    ["espectaculos", "Espectáculos"],
-  ]) {
+  for (const [slug, title, seoTitle] of [
+    ["bodas", "Bodas", /para bodas/],
+    ["cumpleanos-y-15", "Cumpleaños y 15", /cumpleaños y fiestas de 15/],
+    ["fiestas-privadas", "Fiestas privadas", /fiestas privadas/],
+    ["corporativos", "Corporativos", /eventos corporativos/],
+    ["espectaculos", "Espectáculos", /espectáculos/],
+  ] as const) {
     test(`/eventos/${slug}`, async ({ page }) => {
       await page.goto(`/eventos/${slug}`);
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(title);
       await expect(page.getByRole("link", { name: /pedí tu presupuesto/i })).toHaveAttribute("href", `/?evento=${slug}#presupuesto`);
-      await expect(page).toHaveTitle(new RegExp(title));
+      await expect(page).toHaveTitle(seoTitle);
     });
   }
 
@@ -377,5 +403,60 @@ test.describe("etiqueta y aviso en /galeria y su visor", () => {
     await real.getByRole("button").click();
     await expect(dlg).toBeVisible();
     await expect(dlg).not.toContainText(/ilustrativa/i);
+  });
+});
+
+test.describe("página 404", () => {
+  const missing = ["/ruta-que-no-existe", "/eventos/inexistente", "/servicios/inexistente", "/galeria/otra"];
+
+  for (const path of missing) {
+    test(`acceso directo a ${path}: 404 real, independiente y sin directivas contradictorias`, async ({ page }) => {
+      const res = await page.goto(path);
+      expect(res?.status()).toBe(404);
+      await expect(page.getByText("404", { exact: true })).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Página no encontrada");
+      await expect(page.getByRole("link", { name: "Volver al inicio" })).toHaveAttribute("href", "/");
+      // Nada del sitio: ni navbar, ni footer, ni barra inferior, ni escenario, ni presupuesto
+      for (const sel of ["header", "footer", "nav", "#escenario", "#presupuesto", "canvas", "[href*='presupuesto']"]) {
+        await expect(page.locator(sel)).toHaveCount(0);
+      }
+      await expect(page.locator('meta[name="robots"]')).toHaveCount(1);
+      await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+      await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);
+      const box = await page.getByRole("heading", { level: 1 }).boundingBox();
+      const vp = page.viewportSize()!;
+      expect(Math.abs(box!.x + box!.width / 2 - vp.width / 2)).toBeLessThan(2);
+      expect(await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight + 1)).toBe(true);
+    });
+  }
+
+  test("navegación interna a un slug inexistente muestra la 404 y vuelve al inicio con el sitio completo", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+    for (const path of ["/eventos/inexistente", "/servicios/inexistente"]) {
+      await page.evaluate((p) => (window as unknown as { next: { router: { push: (u: string) => void } } }).next.router.push(p), path);
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Página no encontrada");
+      await expect(page.locator("footer")).toHaveCount(0);
+      await expect(page.locator("canvas")).toHaveCount(0);
+      await page.getByRole("link", { name: "Volver al inicio" }).click();
+      await expect(page).toHaveURL(/\/$/);
+      await expect(page.getByRole("heading", { level: 1 })).toContainText(/tu evento/i);
+      await expect(page.locator("footer")).toHaveCount(1);
+      await expect(page.locator("#escenario")).toHaveCount(1);
+    }
+  });
+
+  test("no hay peticiones a los fotogramas del escenario", async ({ page }) => {
+    const frames: string[] = [];
+    page.on("request", (r) => { if (r.url().includes("/stage/frames/")) frames.push(r.url()); });
+    await page.goto("/ruta-que-no-existe");
+    await page.waitForLoadState("networkidle");
+    expect(frames).toEqual([]);
+  });
+
+  test("accesibilidad (axe)", async ({ page }) => {
+    await page.goto("/ruta-que-no-existe");
+    const r = await new AxeBuilder({ page }).analyze();
+    expect(r.violations.filter((v) => ["serious", "critical"].includes(v.impact ?? ""))).toEqual([]);
   });
 });
