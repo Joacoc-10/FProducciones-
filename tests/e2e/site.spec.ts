@@ -215,6 +215,56 @@ test.describe("formulario de presupuesto", () => {
   });
 });
 
+test.describe("footer y firma", () => {
+  test("la firma JCoding abre en pestaña nueva con etiqueta accesible y el footer ya no lleva el aviso general", async ({ page }) => {
+    await page.goto("/");
+    const footer = page.locator("footer");
+    const sig = footer.getByRole("link", { name: /JCoding/ });
+    await expect(sig).toHaveAttribute("href", "https://jcoding.vercel.app/");
+    await expect(sig).toHaveAttribute("target", "_blank");
+    await expect(sig).toHaveAttribute("rel", "noopener noreferrer");
+    await expect(sig).toHaveAttribute("aria-label", /abre en una pestaña nueva/);
+    await expect(footer).toContainText(/© \d{4} Fabio Producciones/);
+    await expect(footer).not.toContainText(/Ilustrativa/);
+  });
+
+  test("el aro del isotipo gira 30° al pasar el cursor; con reduced-motion no se mueve", async ({ browser, isMobile }) => {
+    test.skip(isMobile, "Hover solo en escritorio");
+    const rotate = async (reduced: boolean) => {
+      const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: reduced ? "reduce" : "no-preference" });
+      const page = await ctx.newPage();
+      await page.goto("/");
+      const sig = page.locator("footer a.jcoding-signature");
+      await sig.scrollIntoViewIfNeeded();
+      await sig.hover();
+      await page.waitForTimeout(600);
+      const t = await page.locator(".jcoding-signature__ring").evaluate((e) => getComputedStyle(e).transform);
+      await ctx.close();
+      return t;
+    };
+    expect(await rotate(false)).toBe("matrix(0.866025, 0.5, -0.5, 0.866025, 0, 0)");
+    expect(await rotate(true)).toBe("none");
+  });
+
+  test("los avisos «Ilustrativa» siguen en las secciones con imágenes conceptuales", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("#eventos")).toContainText(/ilustrativa/i);
+    await expect(page.locator("#escenario")).toContainText(/ilustrativa/i);
+    await expect(page.locator("#galeria")).toContainText(/no son trabajos realizados/i);
+  });
+});
+
+test.describe("favicon", () => {
+  test("el head declara el favicon nuevo y todos los archivos responden", async ({ page, request }) => {
+    await page.goto("/");
+    const hrefs = await page.locator('head link[rel="icon"], head link[rel="apple-touch-icon"]').evaluateAll((ls) => ls.map((l) => l.getAttribute("href")!));
+    expect(hrefs.length).toBeGreaterThanOrEqual(3);
+    for (const h of hrefs) expect((await request.get(h)).status()).toBe(200);
+    const manifest = await (await request.get("/manifest.webmanifest")).json();
+    for (const i of manifest.icons) expect((await request.get(i.src)).status()).toBe(200);
+  });
+});
+
 test.describe("accesibilidad (axe)", () => {
   for (const path of ["/", "/eventos/bodas"]) {
     test(`sin violaciones serias o críticas en ${path}`, async ({ page }) => {

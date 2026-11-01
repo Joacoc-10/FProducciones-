@@ -109,6 +109,9 @@ html.lenis, html.lenis body { height: auto; }
   .skip-link:focus { transform: none; }
 }
 
+/* Firma JCoding en el footer: más contraste que el original para cumplir 4,5:1 sobre --surface */
+.site-footer .jcoding-signature { --jcoding-muted: rgba(245, 240, 235, 0.62); }
+
 /* Revelados: visibles por defecto (sin JS). El script inline de layout agrega
    .motion-ok antes del primer pintado si el usuario acepta movimiento. */
 .motion-ok [data-reveal] { opacity: 0; transform: translate3d(0, 24px, 0); }

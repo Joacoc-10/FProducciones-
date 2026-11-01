@@ -100,7 +100,7 @@ docs/         REDESIGN_PLAN.md · MEDIA_ASSETS.md
 7. **Galería** audiovisual editorial (ver §7).
 8. **Cómo se arma**: proceso en 4 pasos (provisorio).
 9. **Presupuesto**: formulario guiado + WhatsApp + datos de contacto.
-10. **Footer** con contactos reales y aviso de imágenes ilustrativas.
+10. **Footer** compacto con logo original, contactos reales, copyright y firma JCoding (abajo a la derecha).
 11. **Barra inferior móvil** (WhatsApp + Presupuesto).
 
 **Páginas de evento:** hero con la luz del evento, descripción, qué se puede sumar (audio / luces / escenario), galería ilustrativa rotulada, CTA al formulario con el tipo de evento precargado.
@@ -128,7 +128,7 @@ docs/         REDESIGN_PLAN.md · MEDIA_ASSETS.md
 
 - Los recursos los genera el equipo; **no se generan automáticamente**. Cada recurso nuevo se documenta en `MEDIA_ASSETS.md` con id, sección, prompt en inglés, ruta exacta, formato, dimensiones, ratio, composición/espacio de texto, referencia necesaria y prioridad.
 - Estilo común (prefijo de prompts): cinematográfico, oscuro, haze volumétrico, negros profundos, acento carmesí, anamórfico 35 mm, grano sutil, sin texto/logos/marcas/rostros reconocibles.
-- Las imágenes IA se rotulan **«Ilustrativa»** (tarjetas de evento, escenario, galería) y el footer incluye el aviso general.
+- Las imágenes IA se rotulan **«Ilustrativa»** (tarjetas y páginas de evento, escenario, galería) con avisos contextuales en cada sección. El footer **ya no** lleva un aviso general (decisión del 2026-11-01): los rótulos contextuales son la única señal, por eso no deben quitarse.
 - **Nunca** se presentan como trabajos realizados. Las imágenes de la sección Galería son material conceptual identificado hasta que haya fotografías auténticas.
 - Referencias del escenario real: dos capturas (plataforma desplegada; escenario con estructura de luces y sonido). **Pendiente de recibir** — guardarlas en `docs/reference/` para alimentar los prompts.
 
@@ -202,7 +202,7 @@ docs/         REDESIGN_PLAN.md · MEDIA_ASSETS.md
 
 **Pendientes (internos)**
 
-- Microrótulo «Ilustrativa» en tarjetas de evento, escenario y galería además del footer (implementado; reversible). El hero **no** lleva rótulo (decisión).
+- Microrótulo «Ilustrativa» en tarjetas y páginas de evento, escenario y galería (implementado). **El hero no lleva rótulo y, al quitar el aviso del footer, su video provisorio (stock) queda sin señal de que es conceptual**: decidir si se agrega un rótulo discreto o se reemplaza pronto por material propio.
 - Umbral de piezas auténticas para reorganizar la galería.
 
 **Riesgos**
@@ -219,7 +219,7 @@ docs/         REDESIGN_PLAN.md · MEDIA_ASSETS.md
 
 - **2026-11-01 · Fase 0:** rama `redesign/backstage-console` creada desde `main` (`b7348df`), árbol limpio. Dependencias nuevas: `lenis`, `@gsap/react`, `vitest`, `@playwright/test`, `@axe-core/playwright`; `@types/node` → 22 (requerido por Vitest). Retiradas: `react-social-icons`, `lucide-react`, `@hcaptcha/react-hcaptcha`, `react-google-recaptcha`, `ogl`, `react-icons`.
 - **2026-11-01 · Fases 1–6 (implementación):**
-  - Sistema de diseño (tokens CSS → Tailwind, Barlow Condensed + Inter + JetBrains Mono), navbar nueva (oculta al bajar, sección activa, menú móvil a pantalla completa con foco atrapado), barra inferior móvil, footer con aviso de ilustrativas.
+  - Sistema de diseño (tokens CSS → Tailwind, Barlow Condensed + Inter + JetBrains Mono), navbar nueva (oculta al bajar, sección activa, menú móvil a pantalla completa con foco atrapado), barra inferior móvil, footer.
   - Hero con video de fondo: póster siempre debajo (LCP), video solo si no hay reduced-motion ni ahorro de datos / 2g-3g, variante móvil, pausa fuera de pantalla y botón de pausa. Usa temporalmente el video actual (1,8 MB, stock) hasta que exista `public/media/video/hero-loop.mp4`.
   - Manifiesto, 5 tarjetas de evento con luz propia, 5 páginas `/eventos/[slug]` (metadata propia), consola de servicios, escenario con pin + scrub de video (esquemática SVG animada mientras no hay video), galería editorial con visor `<dialog>`, proceso, formulario de 4 pasos con WhatsApp.
   - SEO: `lang="es-UY"`, canonical y OG con dominio real, sitemap, robots, imagen OG generada, JSON-LD `LocalBusiness` con datos confirmados, redirecciones `/events/*` → `/eventos/*`.
@@ -227,3 +227,7 @@ docs/         REDESIGN_PLAN.md · MEDIA_ASSETS.md
   - **Verificación:** `tsc` y `eslint` limpios; Vitest 14/14; Playwright 44 ok / 4 omitidos a propósito (aplican solo a escritorio o a móvil) en proyectos desktop (1440×900) y móvil (Pixel 7), incluido axe (WCAG 2.2 AA) sin violaciones serias/críticas en `/` y `/eventos/bodas`; Lighthouse móvil (build local, simulación estándar): Performance 100, Accesibilidad 100, Buenas prácticas 100, SEO 100, LCP 0,9 s, CLS 0, TBT 10 ms.
   - **Decisión de rendimiento:** el contenido del hero no usa animación de entrada (ni con opacidad ni con transform): cualquier animación sobre el elemento LCP retrasaba el LCP medido (1,1–1,4 s → 3,8 s simulado). La entrada del hero la da el fundido del video.
 - **2026-11-01 · Corrección de identidad:** el isotipo + texto tipográfico del rediseño **no estaba aprobado** y se eliminó. Se restauró el logo original (el de `main`, ImageKit `PHOTO-2025-10-22-20-53-38-Photoroom.png`) en navbar, footer, imagen OG y JSON-LD, con variante para fondo oscuro que conserva forma y proporciones. La identidad visual se rige por `docs/MEDIA_ASSETS.md § Logo`.
+- **2026-11-01 · Favicon, footer y firma:**
+  - **Favicon** nuevo a partir del isotipo original «FP» (P + F aislados del PNG original por componentes conexas, geometría intacta; el negro de la P pasa a blanco cálido sobre mosaico `#07070A` para leerse en pestañas claras y oscuras; el rojo no cambia). Archivos: `src/app/favicon.ico` (16/32/48), `icon.png` (256), `apple-icon.png` (180), `public/icons/icon-192|512.png` y `manifest.ts`. Se regenera con `node scripts/make-favicons.mjs`.
+  - **Footer** más compacto (≈ 450 → 332 px en escritorio): menos padding, enlaces de la columna Mapa más juntos, columnas más cercanas y distribución propia para tablet y móvil. Se mantiene el logo original, los enlaces, contactos y copyright. Se quitó el aviso general de imágenes ilustrativas.
+  - **Firma JCoding** (`components/ui/JCodingSignature`), reutilizada del proyecto florencia-biaturi: misma geometría SVG, CSS, props (`variant`, `theme`, `language`, `animated`) y comportamiento (aro a 30° en 350 ms, `</>` fijo, reduced-motion). En el footer: `variant="signature" theme="dark" language="es"`. Único ajuste: el color del texto sube de 0,4 a 0,62 de opacidad dentro del footer para cumplir contraste 4,5:1 sobre `--surface`.

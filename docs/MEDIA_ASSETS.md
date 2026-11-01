@@ -24,6 +24,19 @@ El logo oficial es el de la versión anterior de la web (PNG con transparencia, 
 
 Las variantes se regeneran con `node scripts/make-logo-variants.mjs` a partir del original (separa cada píxel en mezcla rojo/negro y recompone con blanco; el alfa no se toca). Navbar: alto 48 px (móvil) / 56 px (≥ sm) dentro de la barra de 72 px. Footer: 64 px. También aparece en la imagen OG (`app/opengraph-image`).
 
+## Favicon
+
+Derivado del isotipo original «FP» (la P y la F del logo oficial, sin las letras). La geometría no se modifica: se aísla del PNG original por componentes conexas. Único ajuste de contraste: el negro de la P pasa a blanco cálido y el isotipo se apoya sobre un mosaico `#07070A` con esquinas redondeadas (apple-icon: cuadrado, iOS aplica su máscara).
+
+| Archivo | Tamaños | Uso |
+|---|---|---|
+| `src/app/favicon.ico` | 16, 32, 48 | Pestañas y marcadores (Next lo declara automáticamente) |
+| `src/app/icon.png` | 256 | Icono PNG |
+| `src/app/apple-icon.png` | 180 | iOS / pantalla de inicio |
+| `public/icons/icon-192.png`, `icon-512.png` | 192, 512 | `manifest.webmanifest` (Android) |
+
+Se regeneran con `node scripts/make-favicons.mjs` (usa `public/brand/logo-original.png`). Si el cliente entrega el isotipo en SVG, reemplazar la fuente del script.
+
 ## Prefijo de estilo común (anteponer a todos los prompts de imagen)
 
 ```
