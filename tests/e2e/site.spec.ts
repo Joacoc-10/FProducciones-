@@ -285,15 +285,25 @@ test.describe("galería completa", () => {
     await page.getByRole("link", { name: /ver toda la galería/i }).click();
     await expect(page).toHaveURL(/\/galeria$/);
     const all = await page.locator("section ul > li").count();
-    expect(all).toBeGreaterThan(8);
+    expect(all).toBe(12);
     await expect(page.getByRole("button", { name: /Bodas|Corporativos/ })).toHaveCount(0);
     await page.getByRole("button", { name: "Videos", exact: true }).click();
     expect(await page.locator("section ul > li").count()).toBe(2);
     await page.getByRole("button", { name: "Fotos", exact: true }).click();
-    expect(await page.locator("section ul > li").count()).toBe(all - 2);
+    expect(await page.locator("section ul > li").count()).toBe(10);
     await page.getByRole("button", { name: "Todos", exact: true }).click();
     expect(await page.locator("section ul > li").count()).toBe(all);
     await page.locator("section ul > li button").first().click();
     await expect(page.getByRole("dialog", { name: "Visor de la galería" })).toBeVisible();
   });
+});
+
+test("las fotos reales de murga en /galeria no llevan «Ilustrativa» y tienen crédito", async ({ page }) => {
+  await page.goto("/galeria");
+  await page.getByRole("button", { name: "Fotos", exact: true }).click();
+  const tiles = page.locator("section ul > li").filter({ has: page.getByRole("button", { name: /Ampliar imagen: (Murga sobre|Espectáculo de murga)/ }) });
+  await expect(tiles).toHaveCount(2);
+  for (let i = 0; i < 2; i++) await expect(tiles.nth(i)).not.toContainText(/ilustrativa/i);
+  await tiles.first().getByRole("button").click();
+  await expect(page.getByRole("dialog", { name: "Visor de la galería" })).toContainText("Emilio Fotografía");
 });

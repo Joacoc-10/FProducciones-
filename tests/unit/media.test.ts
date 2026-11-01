@@ -45,6 +45,7 @@ describe("honestidad de la galería", () => {
 
   it("ninguna pieza no auténtica se describe como trabajo realizado", () => {
     for (const { entry } of galleryItems) {
+      if (entry.origin === "authentic") continue; // material real: sin rótulo, vive en /media/real/
       const r = resolveMedia(entry, () => false);
       if (r.origin !== "authentic") {
         expect(texts(entry.alt)).toMatch(/conceptual/);
@@ -82,8 +83,23 @@ describe("manifiesto de la galería", () => {
     expect(home.filter((t) => t.kind === "video")).toHaveLength(1);
   });
 
-  it("/galeria incluye todo el manifiesto, incluido lo que no está en la portada", () => {
+  it("/galeria incluye todo el manifiesto (12 piezas), incluido lo que no está en la portada", () => {
+    expect(getGalleryTiles("all", () => true)).toHaveLength(12);
     expect(getGalleryTiles("all", () => true)).toHaveLength(galleryItems.length);
+  });
+
+  it("las fotos reales de murga están solo en /galeria, sin rótulo, con crédito y sin cambiar el orden previo", () => {
+    const all = getGalleryTiles("all", () => true);
+    const home = getGalleryTiles("home", () => true).map((t) => t.id);
+    for (const id of ["gallery.murga-01", "gallery.murga-02"]) {
+      const t = all.find((x) => x.id === id)!;
+      expect(t.origin).toBe("authentic");
+      expect(isIllustrative(t.origin)).toBe(false);
+      expect(t.src?.startsWith("/media/real/")).toBe(true);
+      expect(t.credit).toBe("Emilio Fotografía");
+      expect(home).not.toContain(id);
+    }
+    expect(all.slice(0, 10).map((t) => t.id).at(-1)).toBe("gallery.video-02");
   });
 
   it("los archivos locales registrados existen en public/", () => {

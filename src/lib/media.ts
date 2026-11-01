@@ -62,7 +62,8 @@ export function getGalleryTiles(scope: "home" | "all", exists?: Exists): Gallery
       ...resolveMedia(g.entry, exists),
       span: g.home?.span ?? "",
       featured: g.home?.featured,
-      objectPosition: g.home?.objectPosition,
+      objectPosition: g.home?.objectPosition ?? g.objectPosition,
       event: g.event,
+      credit: g.credit,
     }));
 }

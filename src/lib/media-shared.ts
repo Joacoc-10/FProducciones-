@@ -24,4 +24,6 @@ export interface GalleryTile extends ResolvedMedia {
   /** `object-position` del recorte en el mosaico de la portada */
   objectPosition?: string;
   event?: string;
+  /** Crédito del fotógrafo */
+  credit?: string;
 }

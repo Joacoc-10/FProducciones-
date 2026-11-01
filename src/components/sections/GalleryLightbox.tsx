@@ -116,6 +116,7 @@ export default function GalleryLightbox({ tiles, index, onIndex }: Props) {
             <div className="flex flex-col gap-2">
               <p className="max-w-2xl text-sm text-text/90">{tile.alt}</p>
               {tile.origin !== "authentic" && <IllustrativeTag className="self-start" />}
+              {tile.credit && <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted">Foto: {tile.credit}</p>}
             </div>
             <div className="flex gap-2">
               <button type="button" onClick={() => go(-1)} aria-label="Anterior" className="inline-flex h-12 w-12 items-center justify-center border border-white/20 hover:border-white">

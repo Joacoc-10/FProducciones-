@@ -28,6 +28,10 @@ export interface GalleryItem {
   };
   /** Tipo de evento (solo piezas auténticas deberían declararlo) */
   event?: string;
+  /** Crédito del fotógrafo; se muestra en el visor */
+  credit?: string;
+  /** `object-position` del recorte en /galeria (en la portada manda `home.objectPosition`) */
+  objectPosition?: string;
 }
 
 const IK = "https://ik.imagekit.io/i1pxujmp5t/FProducciones";
@@ -147,5 +151,31 @@ export const galleryItems: GalleryItem[] = [
       alt: "Video conceptual: mesa de audio en movimiento",
       fallback: video("120954-724685298_small.mp4"),
     },
+  },
+  {
+    entry: {
+      id: "gallery.murga-01",
+      kind: "image",
+      file: "/media/real/gallery/murga-01.jpg",
+      origin: "authentic",
+      alt: "Murga sobre el escenario: integrantes con trajes rojos y dorados bajo haces de luz verdes, frente a un telón pintado",
+    },
+    event: "espectaculos",
+    credit: "Emilio Fotografía",
+    // La marca de agua del fotógrafo está arriba: el recorte se ancla al borde superior
+    objectPosition: "50% 0%",
+  },
+  {
+    entry: {
+      id: "gallery.murga-02",
+      kind: "image",
+      file: "/media/real/gallery/murga-02.jpg",
+      origin: "authentic",
+      alt: "Espectáculo de murga: cantante en primer plano y coro con trajes de colores bajo luces violetas, amarillas y verdes",
+    },
+    event: "espectaculos",
+    credit: "Emilio Fotografía",
+    // La marca de agua del fotógrafo está arriba: el recorte se ancla al borde superior
+    objectPosition: "50% 0%",
   },
 ];
