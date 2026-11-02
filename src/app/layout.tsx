@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Barlow_Condensed, Inter, JetBrains_Mono } from "next/font/google";
 import "../styles/globals.css";
+import SiteSpeedInsights from "@/components/analytics/SiteSpeedInsights";
 import { site } from "@/content/site";
 
 const display = Barlow_Condensed({
@@ -50,7 +51,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <style>{`.motion-ok [data-reveal]{opacity:1!important;transform:none!important}`}</style>
         </noscript>
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <SiteSpeedInsights />
+      </body>
     </html>
   );
 }

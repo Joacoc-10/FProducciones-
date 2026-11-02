@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { send } from "@emailjs/browser";
 import { events } from "@/content/events";
 import { site } from "@/content/site";
 import {
@@ -9,6 +10,7 @@ import {
   guestOptions,
   hasErrors,
   LAST_STEP,
+  prefillFromSearch,
   serviceOptions,
   STEP_TITLES,
   todayISO,
@@ -16,12 +18,14 @@ import {
   type QuoteData,
   type QuoteErrors,
 } from "@/lib/quote";
+import { createQuoteSender, readEmailjsConfig, type SubmitResult } from "@/lib/quote-submit";
 import { buildQuoteMessage, waLink } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
 import { ChannelLabel } from "@/components/console/Console";
 import { ArrowIcon, CheckIcon, WhatsappIcon } from "@/components/ui/Icons";
 
 type Status = "idle" | "sending" | "success" | "error";
+type FailureKind = Extract<SubmitResult, { kind: "not-configured" | "provider-error" | "network-error" }>["kind"];
 
 const eventOptions = [...events.map((e) => e.formLabel), "Otro"];
 const inputCls =
@@ -46,7 +50,9 @@ export default function QuoteForm() {
   const [data, setData] = useState<QuoteData>(emptyQuote);
   const [errors, setErrors] = useState<QuoteErrors>({});
   const [status, setStatus] = useState<Status>("idle");
+  const [failure, setFailure] = useState<FailureKind>("provider-error");
   const [today, setToday] = useState("");
+  const sender = useMemo(() => createQuoteSender({ send, config: readEmailjsConfig }), []);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const firstRender = useRef(true);
@@ -57,15 +63,15 @@ export default function QuoteForm() {
     setErrors((e) => (e[k] ? { ...e, [k]: undefined } : e));
   };
 
-  // Fecha mínima y evento precargado (?evento=slug)
+  // Fecha mínima y precarga desde la URL (?evento=slug, ?servicio=audio|luces|escenario)
   useEffect(() => {
+    // Inicialización solo de cliente tras montar (fecha local y query string): leerlas en el render rompería la hidratación.
+    /* eslint-disable react-hooks/set-state-in-effect */
     setToday(todayISO());
-    const params = new URLSearchParams(window.location.search);
-    const ev = events.find((e) => e.slug === params.get("evento"));
-    if (ev) setData((d) => ({ ...d, tipoEvento: ev.formLabel }));
-    // ?servicio=audio|luces|escenario (desde las páginas de servicio)
-    const option = { audio: "Audio", luces: "Luces", escenario: "Escenario portátil" }[params.get("servicio") ?? ""];
-    if (option) setData((d) => ({ ...d, servicios: [option] }));
+    const prefill = prefillFromSearch(window.location.search, events);
+    if (prefill.tipoEvento) setData((d) => ({ ...d, tipoEvento: prefill.tipoEvento! }));
+    if (prefill.servicios) setData((d) => ({ ...d, servicios: prefill.servicios! }));
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   // Foco al encabezado del paso al cambiar
@@ -108,46 +114,16 @@ export default function QuoteForm() {
       setStatus("success");
       return;
     }
-    const key = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
-    if (!key) {
-      setStatus("error");
+    setStatus("sending");
+    const result = await sender(data);
+    if (result.kind === "busy") return;
+    if (result.kind === "success") {
+      setStatus("success");
       return;
     }
-    setStatus("sending");
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 15000);
-    try {
-      const fd = new FormData();
-      fd.append("access_key", key);
-      fd.append("subject", `Nuevo pedido de presupuesto — ${data.tipoEvento}`);
-      fd.append("from_name", "Web Fabio Producciones");
-      fd.append("botcheck", ""); // honeypot
-      fd.append("Nombre", data.nombre.trim());
-      fd.append("Teléfono / WhatsApp", data.telefono.trim());
-      if (data.email.trim()) {
-        fd.append("Email", data.email.trim());
-        fd.append("replyto", data.email.trim());
-      }
-      fd.append("Tipo de evento", data.tipoEvento);
-      fd.append("Fecha", data.fecha || "Sin definir");
-      fd.append("Lugar", data.lugar.trim());
-      fd.append("Servicios", data.servicios.join(", "));
-      fd.append("Invitados", data.invitados || "Sin definir");
-      fd.append("Comentario", data.comentario.trim() || "—");
-      const res = await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        body: fd,
-        headers: { Accept: "application/json" },
-        signal: ctrl.signal,
-      });
-      const json = (await res.json()) as { success?: boolean };
-      setStatus(res.ok && json.success ? "success" : "error");
-    } catch {
-      setStatus("error");
-    } finally {
-      clearTimeout(timer);
-    }
-  }, [data, today]);
+    setFailure(result.kind);
+    setStatus("error");
+  }, [data, today, sender]);
 
   const reset = () => {
     setData(emptyQuote);
@@ -164,7 +140,7 @@ export default function QuoteForm() {
       <div className="border border-white/10 bg-surface p-6 md:p-10" role="status">
         <span className="flex h-12 w-12 items-center justify-center bg-brand text-white"><CheckIcon className="h-6 w-6" /></span>
         <h3 ref={headingRef} tabIndex={-1} className="mt-6 text-4xl font-extrabold outline-none md:text-5xl">¡Pedido enviado!</h3>
-        <p className="mt-4 max-w-md text-muted">Recibimos tu pedido. Si preferís una respuesta más rápida, seguí la conversación por WhatsApp con el resumen ya armado.</p>
+        <p className="mt-4 max-w-md text-muted">El servicio de correo aceptó tu pedido. Si preferís una respuesta más rápida, seguí la conversación por WhatsApp con el resumen ya armado.</p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <a href={waUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary"><WhatsappIcon className="h-5 w-5" /> Seguir por WhatsApp</a>
           <button type="button" onClick={reset} className="btn btn-ghost">Enviar otro pedido</button>
@@ -317,8 +293,14 @@ export default function QuoteForm() {
             </div>
             {status === "error" && (
               <div role="alert" className="border-l-2 border-brand-hi bg-brand/10 px-4 py-4 text-sm">
-                <p className="font-semibold">No pudimos enviar el pedido.</p>
-                <p className="mt-1 text-muted">Probá de nuevo o escribinos directo por WhatsApp con el resumen ya armado.</p>
+                <p className="font-semibold">
+                  {failure === "not-configured" ? "El envío desde el formulario no está disponible por ahora." : "No pudimos enviar el pedido."}
+                </p>
+                <p className="mt-1 text-muted">
+                  {failure === "not-configured" && "Escribinos directo por WhatsApp con el resumen ya armado."}
+                  {failure === "provider-error" && "Probá de nuevo o escribinos directo por WhatsApp con el resumen ya armado."}
+                  {failure === "network-error" && "No recibimos respuesta y no podemos confirmar si el pedido llegó. Para evitar duplicados, lo más seguro es escribirnos por WhatsApp con el resumen ya armado."}
+                </p>
                 <a href={waUrl} target="_blank" rel="noopener noreferrer" className="btn btn-ghost mt-4 !min-h-[44px]"><WhatsappIcon className="h-5 w-5" /> Enviar por WhatsApp</a>
               </div>
             )}
@@ -333,8 +315,8 @@ export default function QuoteForm() {
         {step < LAST_STEP ? (
           <button type="submit" className="btn btn-primary">Siguiente <ArrowIcon className="h-5 w-5" /></button>
         ) : (
-          <button type="submit" disabled={status === "sending"} className="btn btn-primary disabled:opacity-60">
-            {status === "sending" ? "Enviando…" : status === "error" ? "Reintentar envío" : "Enviar pedido"}
+          <button type="submit" disabled={status === "sending"} aria-busy={status === "sending"} className="btn btn-primary disabled:opacity-60">
+            {status === "sending" ? "Enviando…" : status === "error" && failure !== "not-configured" ? "Reintentar envío" : "Enviar pedido"}
           </button>
         )}
       </div>

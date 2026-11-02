@@ -133,21 +133,7 @@ test.describe("navegación", () => {
   });
 });
 
-test.describe("páginas de servicio", () => {
-  for (const [slug, h1, service, seoTitle = h1] of [
-    ["alquiler-de-sonido", "Alquiler de sonido para eventos", "audio"],
-    ["alquiler-de-luces", "Alquiler de luces para fiestas y eventos", "luces"],
-    ["alquiler-de-escenario-portatil", "Alquiler de escenario portátil", "escenario", "Alquiler de escenario portátil para eventos"],
-  ] as const) {
-    test(`/servicios/${slug}`, async ({ page }) => {
-      await page.goto(`/servicios/${slug}`);
-      await expect(page.getByRole("heading", { level: 1 })).toHaveText(h1);
-      await expect(page).toHaveTitle(new RegExp(`^${seoTitle} \\| Fabio Producciones$`));
-      await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", new RegExp(`/servicios/${slug}$`));
-      await expect(page.getByRole("link", { name: /pedí tu presupuesto/i })).toHaveAttribute("href", `/?servicio=${service}#presupuesto`);
-    });
-  }
-
+test.describe("servicios", () => {
   test("el enlace de servicio precarga el formulario", async ({ page }) => {
     await page.goto("/?servicio=luces#presupuesto");
     const form = page.locator("#presupuesto form");
@@ -223,7 +209,13 @@ test.describe("galería", () => {
 });
 
 test.describe("formulario de presupuesto", () => {
-  const key = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
+  // Requieren un build con las tres NEXT_PUBLIC_EMAILJS_* (valores de prueba: nunca se contacta a EmailJS, se intercepta)
+  const configured = !!(
+    process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID &&
+    process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID &&
+    process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY
+  );
+  const sendUrl = "https://api.emailjs.com/api/v1.0/email/send";
 
   async function fillToSummary(page: import("@playwright/test").Page) {
     await page.goto("/");
@@ -266,10 +258,12 @@ test.describe("formulario de presupuesto", () => {
   });
 
   test("envío exitoso muestra confirmación y WhatsApp con el resumen", async ({ page }) => {
-    test.skip(!key, "Requiere build con NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY (puede ser un valor de prueba)");
-    await page.route("https://api.web3forms.com/submit", (r) =>
-      r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ success: true }) }),
-    );
+    test.skip(!configured, "Requiere build con NEXT_PUBLIC_EMAILJS_* (valores de prueba)");
+    const bodies: string[] = [];
+    await page.route(sendUrl, (r) => {
+      bodies.push(r.request().postData() ?? "");
+      return r.fulfill({ status: 200, contentType: "text/plain", body: "OK" });
+    });
     const form = await fillToSummary(page);
     await form.getByRole("button", { name: /enviar pedido/i }).click();
     await expect(page.getByRole("heading", { name: /pedido enviado/i })).toBeVisible();
@@ -277,11 +271,43 @@ test.describe("formulario de presupuesto", () => {
     const href = (await wa.getAttribute("href")) ?? "";
     expect(href).toMatch(/^https:\/\/wa\.me\/59898067306\?text=/);
     expect(decodeURIComponent(href)).toContain("Evento: Boda");
+    expect(bodies).toHaveLength(1);
+    const sent = JSON.parse(bodies[0]);
+    expect(sent.template_params).toMatchObject({ name: "Ana Test", event_type: "Boda", reply_to: "", email: "No informado" });
+  });
+
+  test("error del proveedor muestra alternativa por WhatsApp", async ({ page }) => {
+    test.skip(!configured, "Requiere build con NEXT_PUBLIC_EMAILJS_* (valores de prueba)");
+    await page.route(sendUrl, (r) => r.fulfill({ status: 412, contentType: "text/plain", body: "Invalid grant" }));
+    const form = await fillToSummary(page);
+    await form.getByRole("button", { name: /enviar pedido/i }).click();
+    await expect(form.getByRole("alert")).toContainText(/no pudimos enviar/i);
+    await expect(form.getByRole("link", { name: /enviar por whatsapp/i })).toBeVisible();
+  });
+
+  test("sin configuración no se envía y se ofrece WhatsApp", async ({ page }) => {
+    test.skip(configured, "Solo aplica a un build sin NEXT_PUBLIC_EMAILJS_*");
+    let calls = 0;
+    await page.route(sendUrl, (r) => { calls++; return r.abort(); });
+    const form = await fillToSummary(page);
+    await form.getByRole("button", { name: /enviar pedido/i }).click();
+    await expect(form.getByRole("alert")).toContainText(/no está disponible/i);
+    await expect(form.getByRole("link", { name: /enviar por whatsapp/i })).toBeVisible();
+    expect(calls).toBe(0);
+  });
+
+  test("servicio precargado desde ?servicio=", async ({ page }) => {
+    await page.goto("/?servicio=luces#presupuesto");
+    const form = page.locator("#presupuesto form");
+    await form.getByLabel("Boda").check({ force: true });
+    await form.getByLabel("Lugar o ciudad").fill("Montevideo");
+    await form.getByRole("button", { name: /siguiente/i }).click();
+    await expect(form.getByLabel("Luces")).toBeChecked();
   });
 
   test("error de red muestra alternativa por WhatsApp y permite reintentar", async ({ page }) => {
-    test.skip(!key, "Requiere build con NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY");
-    await page.route("https://api.web3forms.com/submit", (r) => r.abort());
+    test.skip(!configured, "Requiere build con NEXT_PUBLIC_EMAILJS_* (valores de prueba)");
+    await page.route(sendUrl, (r) => r.abort());
     const form = await fillToSummary(page);
     await form.getByRole("button", { name: /enviar pedido/i }).click();
     await expect(form.getByRole("alert")).toContainText(/no pudimos enviar/i);
@@ -407,7 +433,8 @@ test.describe("etiqueta y aviso en /galeria y su visor", () => {
 });
 
 test.describe("página 404", () => {
-  const missing = ["/ruta-que-no-existe", "/eventos/inexistente", "/servicios/inexistente", "/galeria/otra"];
+  const missing = ["/ruta-que-no-existe", "/eventos/inexistente", "/servicios/inexistente", "/galeria/otra",
+    "/servicios/alquiler-de-sonido", "/servicios/alquiler-de-luces", "/servicios/alquiler-de-escenario-portatil"];
 
   for (const path of missing) {
     test(`acceso directo a ${path}: 404 real, independiente y sin directivas contradictorias`, async ({ page }) => {

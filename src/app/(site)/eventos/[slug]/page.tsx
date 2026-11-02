@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import type { CSSProperties } from "react";
 import { eventBySlug, events } from "@/content/events";
 import { services } from "@/content/services";
-import { servicePageForService } from "@/content/service-pages";
 import { pageMetadata, servicePageJsonLd } from "@/lib/seo";
 import JsonLd from "@/components/seo/JsonLd";
 import { getMedia } from "@/lib/media";
@@ -85,7 +84,7 @@ export default async function EventPage({ params }: Props) {
                 <li key={s.id} className="py-5">
                   <p className="font-mono text-xs uppercase tracking-[0.18em] text-brand-hi">{s.channel}</p>
                   <h3 className="mt-1 text-3xl font-extrabold">
-                    <Link href={`/servicios/${servicePageForService(s.id).slug}`} className="hover:text-brand-hi">{s.title}</Link>
+                    {s.title}
                   </h3>
                   <p className="mt-1 text-muted">{s.text}</p>
                 </li>

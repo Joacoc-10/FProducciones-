@@ -64,3 +64,22 @@ export function firstInvalidStep(d: QuoteData, today = todayISO()): number {
   for (const s of [0, 1, 2]) if (hasErrors(validateStep(s, d, today))) return s;
   return -1;
 }
+
+const serviceByParam: Record<string, string> = { audio: "Audio", luces: "Luces", escenario: "Escenario portátil" };
+
+/**
+ * Valores precargados desde la URL: ?evento=<slug> y ?servicio=audio|luces|escenario.
+ * Recibe los slugs y etiquetas de eventos para no depender de content/.
+ */
+export function prefillFromSearch(
+  search: string,
+  events: { slug: string; formLabel: string }[],
+): Partial<Pick<QuoteData, "tipoEvento" | "servicios">> {
+  const params = new URLSearchParams(search);
+  const out: Partial<Pick<QuoteData, "tipoEvento" | "servicios">> = {};
+  const ev = events.find((e) => e.slug === params.get("evento"));
+  if (ev) out.tipoEvento = ev.formLabel;
+  const option = serviceByParam[params.get("servicio") ?? ""];
+  if (option) out.servicios = [option];
+  return out;
+}

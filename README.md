@@ -3,6 +3,7 @@
 Sitio web de Fabio Producciones (sonido, luces y escenario portátil para eventos).
 Next.js 16 (App Router) · React 19 · TypeScript · Tailwind 3 · GSAP + ScrollTrigger · Lenis.
 
+- Formulario de presupuesto (EmailJS) y medición (Speed Insights): [`docs/EMAILJS.md`](docs/EMAILJS.md)
 - Plan de rediseño y decisiones: [`docs/REDESIGN_PLAN.md`](docs/REDESIGN_PLAN.md)
 - Inventario de imágenes/videos y prompts: [`docs/MEDIA_ASSETS.md`](docs/MEDIA_ASSETS.md)
 
@@ -10,7 +11,7 @@ Next.js 16 (App Router) · React 19 · TypeScript · Tailwind 3 · GSAP + Scroll
 
 ```bash
 npm install
-cp .env.example .env.local   # completar NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY
+cp .env.example .env.local   # completar NEXT_PUBLIC_EMAILJS_* (ver docs/EMAILJS.md)
 npm run dev
 ```
 
@@ -19,7 +20,7 @@ npm run dev
 | `npm run build` / `npm start` | Build y servidor de producción |
 | `npm run lint` · `npm run typecheck` | ESLint y TypeScript |
 | `npm test` | Pruebas unitarias (Vitest) |
-| `NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY=test npm run build && NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY=test npm run test:e2e` | E2E + accesibilidad (Playwright + axe). Requiere `npx playwright install chromium` la primera vez |
+| `NEXT_PUBLIC_EMAILJS_SERVICE_ID=test NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=test NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=test npm run build && <mismas variables> npm run test:e2e` | E2E + accesibilidad (Playwright + axe). Requiere `npx playwright install chromium` la primera vez |
 
 ## Reemplazar imágenes y videos
 
