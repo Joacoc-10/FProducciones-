@@ -2,228 +2,127 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
+:root {
+  --bg: 7 7 10;
+  --surface: 15 15 20;
+  --surface-2: 22 22 29;
+  --text: 242 239 234;
+  --muted: 168 163 155;
+  --brand: 200 32 27;
+  --brand-hi: 229 50 45;
+  --light: 229 50 45; /* luz por defecto; cada evento la sobreescribe */
+  --nav-h: 4.5rem;
 }
 
-
-html {
-  scroll-behavior: smooth;
-}
-
-
-body {
-  @apply bg-black-fp-500 text-white-fp-300 ;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   html {
     color-scheme: dark;
-  }
-}
-
-.card-dark {
-  background: rgba(17, 17, 17, 0.7);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
-  border-radius: 1rem;
-  transition: all 0.3s ease;
-}
-
-.card-dark:hover {
-  transform: scale(1.02);
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.35);
-}
-
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-  }
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border;
+    background: rgb(var(--bg));
+    -webkit-text-size-adjust: 100%;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-bg font-body text-text antialiased;
+    font-size: 1rem;
+    line-height: 1.6;
+    overflow-x: clip;
   }
+  h1, h2, h3, h4 {
+    @apply font-display uppercase;
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+  }
+  img, video, svg { max-width: 100%; }
+  /* Los utilitarios de display (flex, grid…) no deben anular el atributo hidden */
+  [hidden]:not([hidden="until-found"]) { display: none !important; }
+  ::selection { background: rgb(var(--brand)); color: #fff; }
+  :focus-visible {
+    outline: 2px solid rgb(var(--brand-hi));
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  section[id] { scroll-margin-top: calc(var(--nav-h) + 1rem); }
 }
 
+/* Lenis (reglas oficiales mínimas) */
+html.lenis, html.lenis body { height: auto; }
+.lenis:not(.lenis-autoToggle).lenis-stopped { overflow: clip; }
+.lenis [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-smooth iframe { pointer-events: none; }
 
+@layer components {
+  .wrap {
+    @apply mx-auto w-full max-w-[1280px];
+    padding-inline: clamp(1rem, 4vw, 3rem);
+  }
+  .section-y { padding-block: clamp(5rem, 11vw, 9rem); }
 
-/* Estilos para DubleCarousel */
-.double-carousel-container {
-    width: 100%;
-    overflow: hidden; 
+  .eyebrow {
+    @apply font-mono uppercase text-brand-hi;
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+  }
+  .h-display { font-size: clamp(2.75rem, 8.5vw, 7.5rem); font-weight: 800; }
+  .h-section { font-size: clamp(2.25rem, 6vw, 4.75rem); font-weight: 800; }
+
+  .btn {
+    @apply inline-flex min-h-[48px] items-center justify-center gap-2 px-7 py-3 font-display text-lg font-bold uppercase transition-colors duration-200;
+    letter-spacing: 0.08em;
+  }
+  .btn-primary { @apply bg-brand text-white hover:bg-brand-hi; }
+  .btn-ghost { @apply border border-white/25 text-text hover:border-white hover:bg-white/5; }
+
+  /* Foco de luz que sigue al puntero (solo puntero fino; ver MotionRoot) */
+  .spot { position: relative; isolation: isolate; }
+  .spot::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgb(var(--light) / 0.22), transparent 60%);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .spot:hover::after { opacity: 1; }
+  }
+
+  .grid-lines {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+  .grain::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.07;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .skip-link {
+    @apply fixed left-4 top-4 z-[100] -translate-y-24 bg-brand px-4 py-3 font-display text-lg uppercase text-white;
+  }
+  .skip-link:focus { transform: none; }
 }
 
-/* Estilos para cada fila de carrusel */
-.carousel-wrapper {
-    display: flex;
-    margin: 10px 0; /* Espacio entre el carrusel superior e inferior */
-    width: 100%;
-}
+/* Firma JCoding en el footer: más contraste que el original para cumplir 4,5:1 sobre --surface */
+.site-footer .jcoding-signature { --jcoding-muted: rgba(245, 240, 235, 0.62); }
 
-.carousel-track {
-    display: flex;
-    white-space: nowrap; 
-    width: fit-content; 
-    animation-timing-function: linear;
-    animation-iteration-count: infinite; 
-}
+/* Revelados: visibles por defecto (sin JS). El script inline de layout agrega
+   .motion-ok antes del primer pintado si el usuario acepta movimiento. */
+.motion-ok [data-reveal] { opacity: 0; transform: translate3d(0, 24px, 0); }
+.motion-ok [data-reveal="fade"] { transform: none; }
+.motion-ok.motion-failed [data-reveal] { opacity: 1; transform: none; }
 
-/* Estilos de cada elemento (imagen/video) */
-.carousel-item {
-    width: 300px; 
-    height: 200px; 
-    flex-shrink: 0; 
-    margin: 0 10px; 
-    position: relative; 
-    overflow: hidden; 
-    border-radius: 8px; 
-}
-
-.media-wrapper {
-    width: 100%;
-    height: 100%;
-    position: relative;
-}
-
-/* Asegura que el video ocupe todo el wrapper */
-.media-wrapper video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* Animación para el Carrusel Superior (Derecha) */
-.top-row .carousel-track {
-    animation-name: scrollRight;
-    animation-duration: 35s; 
-}
-
-@keyframes scrollRight {
- 
-    from {
-        transform: translateX(0);
-    }
-    to {
-        transform: translateX(calc(-50% - 10px)); 
-    }
-}
-
-/* Animación para el Carrusel Inferior (Izquierda) */
-.bottom-row .carousel-track {
-    animation-name: scrollLeft;
-    animation-duration: 40s; 
-}
-
-@keyframes scrollLeft {
-    from {
-        transform: translateX(calc(-50% - 10px));
-    }
-    to {
-        transform: translateX(0);
-    }
-}
-
-
-/* Subrayado del navbar y footer */
-.link-underline {
-  position: relative;
-}
-
-.link-underline::after {
-  content: '';
-  position: absolute;
-  width: 100%;
-  transform: scaleX(0);
-  height: 1px;
-  bottom: 0;
-  left: 0;
-  background-color: currentColor;
-  transform-origin: bottom right;
-  transition: transform 0.25s ease-out;
-}
-
-.link-underline:hover::after {
-  transform: scaleX(1);
-  transform-origin: bottom left;
-}
-
-/* Sombra de letras negro */
-.shadow-reflector {
-   text-shadow: 0px 10px 10px rgba(0, 0, 0, 0.9);
-}
-
-/* Sombra para titulos blancos */
-.shadow-reflector-white {
- text-shadow: 0px 10px 10px rgba(80, 79, 79, 0.638);
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
