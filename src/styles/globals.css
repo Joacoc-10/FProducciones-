@@ -114,7 +114,7 @@ html.lenis, html.lenis body { height: auto; }
 
 /* Revelados: visibles por defecto (sin JS). El script inline de layout agrega
    .motion-ok antes del primer pintado si el usuario acepta movimiento. */
-.motion-ok [data-reveal] { opacity: 0; transform: translate3d(0, 24px, 0); }
+.motion-ok [data-reveal] { opacity: 0; }
 .motion-ok [data-reveal="fade"] { transform: none; }
 .motion-ok.motion-failed [data-reveal] { opacity: 1; transform: none; }
 
