@@ -1,43 +1,54 @@
 /**
  * Cargador progresivo de una secuencia de imágenes para dibujar en canvas.
  *
- * - Solo descarga lo necesario: fotogramas "ancla" (cada `anchorStep`, para no quedar nunca en blanco)
- *   más una ventana alrededor del fotograma actual, con sesgo hacia donde va el scroll (adelante o atrás).
- * - Memoria acotada: los bitmaps fuera de la ventana (más `retain` fotogramas de margen, para que invertir el
- *   scroll no los descarte y vuelva a decodificarlos) se liberan; la descarga repetida la resuelve el caché HTTP.
- * - No se gasta CPU en lo que ya no hace falta: una descarga que terminó fuera de la ventana no se decodifica,
- *   y solo se cancela una descarga en curso cuando su lugar lo necesita un fotograma más urgente.
- * - `nearest()` devuelve siempre el fotograma cargado más cercano, así nunca hay un canvas vacío.
+ * Dos niveles de caché, ambos con presupuesto en bytes:
+ *  1. Archivos comprimidos (Blob): se descargan por adelantado, cerca del fotograma actual primero y con sesgo
+ *     hacia donde va el scroll. Con el archivo en memoria, invertir el scroll no vuelve a pasar por la red.
+ *  2. Bitmaps decodificados: una ventana alrededor del fotograma actual (más ancha hacia donde va el scroll)
+ *     más fotogramas "ancla" permanentes. El tamaño de la ventana sale del presupuesto de memoria y del tamaño
+ *     real de cada bitmap, no de una cantidad fija. Se libera con histéresis (un margen extra) para que mover
+ *     el scroll un poco hacia atrás no descarte lo que se acaba de decodificar.
+ * - La decodificación es independiente de la descarga y tiene su propio límite de concurrencia.
+ * - `nearestIndex()` devuelve siempre el fotograma decodificado más cercano, así nunca hay un canvas vacío.
  */
 export interface FrameSequenceOptions {
-  /** Fotogramas (no ancla) que se cargan alrededor del actual */
-  windowSize: number;
-  /** Fotogramas extra ya decodificados que se conservan fuera de la ventana (histéresis); 0 = se liberan enseguida */
-  retain?: number;
+  /** Presupuesto (MB) de bitmaps decodificados, incluidas las anclas */
+  decodeBudgetMB: number;
+  /** Presupuesto (MB) de archivos comprimidos conservados en memoria */
+  blobBudgetMB: number;
   /** Descargas simultáneas (máximo) */
   concurrency: number;
+  /** Decodificaciones simultáneas (máximo) */
+  decodeConcurrency?: number;
   /**
-   * Modo para dispositivos con poca red/CPU: menos descargas simultáneas y ventana más corta cuando cada descarga
-   * tarda, y la ventana apunta adonde estará el scroll cuando llegue la descarga (según su velocidad).
+   * Modo para dispositivos con poca red/CPU: menos descargas simultáneas cuando cada descarga tarda, y la
+   * ventana apunta adonde estará el scroll cuando llegue la descarga (según su velocidad).
    */
   constrained?: boolean;
   /** Cada cuántos fotogramas hay un ancla permanente */
   anchorStep?: number;
   /** Ancho al que se decodifica cada bitmap (ahorra memoria cuando se muestra más chico que el original) */
   bitmapWidth?: number;
-  /** Se llamó al cargar un fotograma (índice) */
+  /** Alto/ancho de los fotogramas (para estimar el tamaño de cada bitmap). 9/16 por defecto */
+  aspect?: number;
+  /** Se decodificó un fotograma (índice) */
   onFrame?: (index: number) => void;
   /** Falló la carga de demasiados fotogramas para mostrar la secuencia */
   onFail?: () => void;
 }
 
 export type Drawable = ImageBitmap | HTMLImageElement | HTMLCanvasElement;
-const BACKWARD_PENALTY = 1.6;
-/** Hasta cuántos fotogramas por delante del actual se apunta la ventana, y tiempo estimado de decodificación (ms) */
+const BACKWARD_PENALTY = 1.2;
+/** Hasta cuántos fotogramas por delante del actual se apunta la ventana, y tiempo estimado de descarga+decodificación (ms) */
 const MAX_LEAD = 40;
-const DECODE_MS = 60;
-/** Ventana de carga máxima (fotogramas) cuando la red es lenta */
-const SLOW_WINDOW = 8;
+const DECODE_MS = 40;
+/** Margen con el que se libera lo decodificado / el caché de archivos, respecto de lo que se quiere tener */
+const KEEP_DECODED = 1.25;
+const KEEP_BLOBS = 1.1;
+/** Descargas simultáneas máximas para fotogramas que todavía no se van a dibujar */
+const FAR_SLOTS = 2;
+/** Tamaño supuesto de un archivo antes de conocer el real */
+const DEFAULT_BLOB_BYTES = 600 * 1024;
 
 function release(d: Drawable) {
   if ("close" in d) d.close();
@@ -63,19 +74,27 @@ function shrink(src: ImageBitmap | HTMLImageElement, width?: number): Drawable {
 
 export class FrameSequence {
   private frames: (Drawable | null)[];
+  private blobs: (Blob | null)[];
+  private blobBytes = 0;
+  private blobCount = 0;
   private loading = new Set<number>();
+  private decoding = new Set<number>();
   private failed = new Set<number>();
   private controllers = new Map<number, AbortController>();
   private focus = 0;
   /** Hacia dónde va el scroll: +1 adelante, -1 atrás (se conserva el último sentido no nulo) */
   private dir = 1;
-  private ranked = new Set<number>();
+  /** Qué se quiere tener decodificado / conservar */
+  private keepDecoded = new Set<number>();
+  private keepBlobs = new Set<number>();
   /** Velocidad del scroll en fotogramas/ms (media móvil) y cuándo se actualizó el foco por última vez */
   private vel = 0;
   private focusAt = 0;
   /** Fotograma alrededor del que se arma la ventana: el actual, o donde se estará cuando llegue la descarga */
   private aim = 0;
   private started = false;
+  /** La sección está cerca del viewport: solo entonces se descarga y se decodifica */
+  private active = true;
   private disposed = false;
   private failNotified = false;
   private readonly anchorStep: number;
@@ -84,6 +103,7 @@ export class FrameSequence {
 
   constructor(private urls: string[], private opts: FrameSequenceOptions) {
     this.frames = urls.map(() => null);
+    this.blobs = urls.map(() => null);
     this.anchorStep = opts.anchorStep ?? 10;
   }
 
@@ -103,6 +123,25 @@ export class FrameSequence {
     this.pump();
   }
 
+  /**
+   * Pausa/reanuda el trabajo según la sección esté o no cerca del viewport. Al pausar se cancelan las descargas en
+   * curso y se liberan los bitmaps (el costo de memoria más alto); los archivos comprimidos se conservan, así que
+   * al volver no hace falta la red.
+   */
+  setActive(active: boolean) {
+    if (this.active === active || this.disposed) return;
+    this.active = active;
+    if (active) {
+      if (this.started) this.pump();
+      return;
+    }
+    this.controllers.forEach((c) => c.abort());
+    this.frames.forEach((f, i) => {
+      if (f) release(f);
+      this.frames[i] = null;
+    });
+  }
+
   /** Indica el fotograma actual y reprioriza descargas / libera memoria */
   setFocus(index: number) {
     const i = Math.max(0, Math.min(this.length - 1, index));
@@ -115,20 +154,39 @@ export class FrameSequence {
     if (this.started) this.pump();
   }
 
-  /** Fotograma exacto o `null` si todavía no está */
+  /** Fotograma decodificado exacto o `null` si todavía no está */
   get(index: number): Drawable | null {
     return this.frames[index] ?? null;
   }
 
-  /** El fotograma cargado más cercano a `index` */
-  nearest(index: number): Drawable | null {
+  /** Índice del fotograma decodificado más cercano a `index` (-1 si no hay ninguno) */
+  nearestIndex(index: number): number {
     for (let d = 0; d < this.length; d++) {
-      const a = this.frames[index - d];
-      if (a) return a;
-      const b = this.frames[index + d];
-      if (b) return b;
+      if (this.frames[index - d]) return index - d;
+      if (this.frames[index + d]) return index + d;
     }
-    return null;
+    return -1;
+  }
+
+  /** El fotograma decodificado más cercano a `index` */
+  nearest(index: number): Drawable | null {
+    const i = this.nearestIndex(index);
+    return i < 0 ? null : this.frames[i];
+  }
+
+  /** Estado interno, solo para mediciones */
+  stats() {
+    let decoded = 0;
+    for (const f of this.frames) if (f) decoded++;
+    return {
+      decoded,
+      blobs: this.blobCount,
+      blobMB: +(this.blobBytes / 1048576).toFixed(1),
+      loading: this.loading.size,
+      failed: this.failed.size,
+      fetchMs: Math.round(this.fetchMs),
+      bitmapWidth: this.opts.bitmapWidth ?? 0,
+    };
   }
 
   dispose() {
@@ -136,8 +194,11 @@ export class FrameSequence {
     this.controllers.forEach((c) => c.abort());
     this.controllers.clear();
     this.loading.clear();
+    this.decoding.clear();
     this.frames.forEach((f) => f && release(f));
     this.frames.fill(null);
+    this.blobs.fill(null);
+    this.blobBytes = this.blobCount = 0;
   }
 
   private isAnchor(i: number) {
@@ -169,65 +230,97 @@ export class FrameSequence {
     return c;
   }
 
+  /** Bytes que ocupa un bitmap decodificado (RGBA) al ancho actual */
+  private bitmapBytes() {
+    const w = this.opts.bitmapWidth ?? 1280;
+    return w * (w * (this.opts.aspect ?? 9 / 16)) * 4;
+  }
+
   private pump() {
-    if (this.disposed) return;
+    if (this.disposed || !this.active) return;
     this.aim = this.focus;
-    if (this.opts.constrained && performance.now() - this.focusAt < 200) {
-      const lead = Math.min(MAX_LEAD, this.vel * (this.fetchMs + DECODE_MS));
+    if (performance.now() - this.focusAt < 200) {
+      const wait = this.opts.constrained ? this.fetchMs + DECODE_MS : DECODE_MS;
+      const lead = Math.min(MAX_LEAD, this.vel * wait);
       this.aim = Math.max(0, Math.min(this.length - 1, Math.round(this.focus + this.dir * lead)));
     }
     const order = this.rankedFrames();
-    // Con red lenta solo da tiempo a traer lo más cercano: una ventana larga reparte el canal entre fotogramas que llegarían tarde
-    const slow = this.opts.constrained && this.fetchMs > 350;
-    const win = slow ? Math.min(this.opts.windowSize, SLOW_WINDOW) : this.opts.windowSize;
-    const keep = win + (this.opts.retain ?? 0);
-    const wanted = new Set<number>();
-    const retained = new Set<number>();
-    for (let i = 0; i < this.length; i++) if (this.isAnchor(i)) wanted.add(i);
-    order.slice(0, win).forEach((i) => wanted.add(i));
-    order.slice(0, keep).forEach((i) => retained.add(i));
-    wanted.add(this.focus);
-    this.ranked = new Set([...wanted, ...retained]);
+    const anchors: number[] = [];
+    for (let i = 0; i < this.length; i++) if (this.isAnchor(i)) anchors.push(i);
 
-    // Liberar memoria solo de lo que quedó fuera de la ventana y del margen de retención
+    // Cuántos bitmaps caben en el presupuesto (descontadas las anclas), y cuántos archivos
+    const decodeWindow = Math.max(4, Math.floor((this.opts.decodeBudgetMB * 1048576) / this.bitmapBytes()) - anchors.length);
+    const avgBlob = this.blobCount ? this.blobBytes / this.blobCount : DEFAULT_BLOB_BYTES;
+    const blobWindow = Math.max(decodeWindow, Math.floor((this.opts.blobBudgetMB * 1048576) / avgBlob) - anchors.length);
+    // Con red lenta cada descarga tarda: no repartir el canal entre fotogramas que llegarían tarde
+    const slow = this.fetchMs > 350;
+    const fetchWindow = slow ? Math.min(blobWindow, decodeWindow) : blobWindow;
+
+    const wantDecode = new Set<number>([...anchors, this.focus, ...order.slice(0, decodeWindow)]);
+    const wantBlob = new Set<number>([...wantDecode, ...order.slice(0, fetchWindow)]);
+    this.keepDecoded = new Set<number>([...wantDecode, ...order.slice(0, Math.ceil(decodeWindow * KEEP_DECODED))]);
+    this.keepBlobs = new Set<number>([...wantBlob, ...order.slice(0, Math.ceil(blobWindow * KEEP_BLOBS))]);
+
+    // Liberar memoria solo de lo que quedó fuera del margen
     for (let i = 0; i < this.length; i++) {
-      if (this.ranked.has(i)) continue;
       const f = this.frames[i];
-      if (f) {
+      if (f && !this.keepDecoded.has(i)) {
         release(f);
         this.frames[i] = null;
       }
+      const b = this.blobs[i];
+      if (b && !this.keepBlobs.has(i) && !this.decoding.has(i)) this.dropBlob(i);
     }
 
-    const pending = [...wanted]
-      .filter((i) => !this.frames[i] && !this.loading.has(i) && !this.failed.has(i))
+    // Decodificar lo que ya está descargado y se necesita, lo más urgente primero
+    const decodeSlots = this.opts.decodeConcurrency ?? 2;
+    const toDecode = [...wantDecode]
+      .filter((i) => !this.frames[i] && this.blobs[i] && !this.decoding.has(i) && !this.failed.has(i))
       .sort((a, b) => this.score(a) - this.score(b));
-
-    // Sin lugar libre para lo urgente: se cancelan las descargas en curso que ya no hacen falta
-    if (pending.length && this.loading.size >= this.slots()) {
-      for (const i of this.loading) if (!this.ranked.has(i)) this.controllers.get(i)?.abort();
+    for (const i of toDecode) {
+      if (this.decoding.size >= decodeSlots) break;
+      void this.decodeFrame(i);
     }
+
+    // Descargar lo que falta, lo más urgente primero
+    const pending = [...wantBlob]
+      .filter((i) => !this.blobs[i] && !this.loading.has(i) && !this.failed.has(i))
+      .sort((a, b) => this.score(a) - this.score(b));
+    // Sin lugar libre para lo urgente: se cancelan las descargas en curso que no se van a dibujar pronto (precarga lejana).
+    // Las que sí se van a dibujar se esperan: cancelarlas tira lo ya descargado.
+    if (pending.length && wantDecode.has(pending[0]) && this.loading.size >= this.slots()) {
+      for (const i of this.loading) if (!wantDecode.has(i)) this.controllers.get(i)?.abort();
+    }
+    // La precarga lejana (fuera de lo que se va a dibujar pronto) no ocupa todos los lugares: queda canal para lo urgente
+    let farLoading = 0;
+    for (const i of this.loading) if (!wantDecode.has(i)) farLoading++;
     for (const i of pending) {
       if (this.loading.size >= this.slots()) break;
-      void this.load(i);
+      const urgent = wantDecode.has(i);
+      if (!urgent && farLoading >= FAR_SLOTS) continue;
+      if (!urgent) farLoading++;
+      void this.load(i, urgent);
     }
   }
 
-  private async load(i: number) {
+  private dropBlob(i: number) {
+    const b = this.blobs[i];
+    if (!b) return;
+    this.blobBytes -= b.size;
+    this.blobCount--;
+    this.blobs[i] = null;
+  }
+
+  private async load(i: number, urgent: boolean) {
     const ctrl = new AbortController();
     this.controllers.set(i, ctrl);
     this.loading.add(i);
     try {
-      const blob = await this.fetchBlob(this.urls[i], ctrl.signal);
-      // Mientras se descargaba el scroll pudo irse lejos: no se gasta CPU decodificando algo que sobra
-      if (!this.ranked.has(i)) return;
-      const frame = await this.decode(blob);
-      if (this.disposed || ctrl.signal.aborted || !this.ranked.has(i)) {
-        release(frame);
-      } else {
-        this.frames[i] = frame;
-        this.opts.onFrame?.(i);
-      }
+      const blob = await this.fetchBlob(this.urls[i], ctrl.signal, urgent);
+      if (this.disposed || ctrl.signal.aborted) return;
+      this.blobs[i] = blob;
+      this.blobBytes += blob.size;
+      this.blobCount++;
     } catch {
       if (!ctrl.signal.aborted && !this.disposed) this.failed.add(i);
     } finally {
@@ -240,9 +333,33 @@ export class FrameSequence {
     }
   }
 
-  private async fetchBlob(url: string, signal: AbortSignal): Promise<Blob> {
+  private async decodeFrame(i: number) {
+    const blob = this.blobs[i];
+    if (!blob) return;
+    this.decoding.add(i);
+    try {
+      const frame = await this.decode(blob);
+      // Mientras se decodificaba el scroll pudo irse lejos: lo que sobra no se guarda
+      if (this.disposed || !this.active || !this.keepDecoded.has(i) || this.frames[i]) {
+        release(frame);
+      } else {
+        this.frames[i] = frame;
+        this.opts.onFrame?.(i);
+      }
+    } catch {
+      if (!this.disposed) this.failed.add(i);
+    } finally {
+      this.decoding.delete(i);
+      if (!this.disposed) {
+        this.checkFailure();
+        this.pump();
+      }
+    }
+  }
+
+  private async fetchBlob(url: string, signal: AbortSignal, urgent: boolean): Promise<Blob> {
     const t0 = performance.now();
-    const res = await fetch(url, { signal });
+    const res = await fetch(url, { signal, priority: urgent ? "high" : "low" } as RequestInit);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const blob = await res.blob();
     const ms = performance.now() - t0;

@@ -1,0 +1,50 @@
+{
+  "label": "B-final-net",
+  "engine": "chromium",
+  "device": "mobile",
+  "throttle": true,
+  "runs": 2,
+  "when": "2026-11-04T22:38:38.316Z",
+  "scenarios": {
+    "normal@0ms": {
+      "exactPct": 34.6,
+      "lagMean": 3.51,
+      "lagP95": 11.8,
+      "lagMax": 13.7,
+      "lagMs": 33,
+      "jumps": 9,
+      "settleMs": 200,
+      "recoverMs": null,
+      "nearPct": 52.3,
+      "stalePct": 23.4,
+      "long33": 0,
+      "long50": 0,
+      "p95Frame": 16.7,
+      "reqs": 37,
+      "mbNet": 3.5,
+      "decodedEnd": 25,
+      "bitmapW": 640,
+      "decodedMBEnd": 22
+    },
+    "normal@1500ms": {
+      "exactPct": 57,
+      "lagMean": 2.1,
+      "lagP95": 6.5,
+      "lagMax": 13.1,
+      "lagMs": 20,
+      "jumps": 7,
+      "settleMs": 150,
+      "recoverMs": null,
+      "nearPct": 70.1,
+      "stalePct": 7.5,
+      "long33": 0,
+      "long50": 0,
+      "p95Frame": 16.8,
+      "reqs": 73,
+      "mbNet": 7.3,
+      "decodedEnd": 31,
+      "bitmapW": 640,
+      "decodedMBEnd": 27
+    }
+  }
+}

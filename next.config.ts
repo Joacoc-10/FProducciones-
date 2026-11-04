@@ -14,6 +14,8 @@ const legacyEventRedirects = [
 }));
 
 const nextConfig: NextConfig = {
+  // Solo desarrollo: permite probar desde el iPhone por la IP local del Mac (sin esto Next bloquea /_next/* y no hidrata)
+  allowedDevOrigins: ["192.168.1.143"],
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [

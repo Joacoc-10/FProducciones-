@@ -18,6 +18,11 @@ const STAGES = [
   { name: "Show", text: "Todo listo: el escenario cobra vida." },
 ] as const;
 
+type StageProbeWindow = Window & {
+  __stageProbe?: (e: { wanted: number; shown: number; exact: boolean; t: number }) => void;
+  __stageSeq?: { stats: () => unknown };
+};
+
 /** Porción del recorrido que se usa para avanzar fotogramas; el resto mantiene el último a la vista. */
 const PLAY_SHARE = 0.92;
 
@@ -41,7 +46,6 @@ export default function StageScroll() {
   const [stage, setStage] = useState(0);
   const [failed, setFailed] = useState(false);
   const animated = autoplayOk && !failed;
-  const staticStage = STAGES.length - 1;
 
   useEffect(() => {
     if (!animated) return;
@@ -55,8 +59,15 @@ export default function StageScroll() {
       return;
     }
     registerGsap();
+    // Gancho opcional para mediciones (tests/perf): no hace nada si no está definido
+    const probe = (window as StageProbeWindow).__stageProbe;
 
-    const urls = getStageFrameUrls();
+    // Móvil: variante de 960 px mientras el canvas no necesite más que eso (teléfonos: 540–650 px); si no, originales
+    const small = mobile && visual.clientWidth * Math.min(window.devicePixelRatio || 1, 1.5) <= STAGE_FRAMES.mobileWidth * 1.05;
+    const urls = getStageFrameUrls(small ? "mobile" : "full");
+    // Dimensiones de la fuente elegida: el canvas y los bitmaps nunca superan lo que el archivo tiene
+    const srcW = small ? STAGE_FRAMES.mobileWidth : STAGE_FRAMES.width;
+    const srcH = Math.round((srcW * STAGE_FRAMES.height) / STAGE_FRAMES.width);
     const last = urls.length - 1;
     const starts = getStageStartPositions();
     let current = 0;
@@ -65,27 +76,41 @@ export default function StageScroll() {
 
     const draw = () => {
       raf = 0;
-      const img = seq.get(current) ?? seq.nearest(current);
-      if (!img) return;
       exact = Boolean(seq.get(current));
+      const shown = exact ? current : seq.nearestIndex(current);
+      const img = shown < 0 ? null : seq.get(shown);
+      if (!img) return;
       // "cover": el visual es 16:9 en móvil/vertical y ocupa toda la sección en pantallas anchas
       const k = Math.max(canvas.width / img.width, canvas.height / img.height);
       const w = img.width * k;
       const h = img.height * k;
       ctx2d.drawImage(img, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
       canvas.style.opacity = "1";
+      probe?.({ wanted: current, shown, exact, t: performance.now() });
     };
+    /** Para fotogramas que llegan de la red: se agrupan en el siguiente frame */
     const requestDraw = () => {
       if (!raf) raf = requestAnimationFrame(draw);
     };
+    /**
+     * Para el scroll: `onUpdate` ya corre dentro del ticker (un rAF); pedir otro rAF retrasaría el dibujo un frame.
+     * Se dibuja en el mismo frame que se calculó el progreso.
+     */
+    const drawNow = () => {
+      if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+      draw();
+    };
 
     const seq = new FrameSequence(urls, {
-      // Cada fotograma pesa ~0,5 MB y decodificado hasta ~8 MB (escritorio, 1920 px) o ~1 MB (móvil, 640 px).
-      // Escritorio: ventana corta y pocas anclas para acotar memoria. Móvil: decodificados son baratos, así que se
-      // carga más lejos y se retienen más (invertir el scroll no obliga a decodificar de nuevo), con anclas más densas.
-      windowSize: mobile ? 28 : 14,
-      retain: mobile ? 14 : 0,
+      // Presupuestos de memoria: bitmaps decodificados (RGBA, ~5,8 MB cada uno a 1600 px en escritorio y ~0,9 MB a 640 px
+      // en móvil) y archivos comprimidos conservados para no volver a la red al invertir el scroll.
+      decodeBudgetMB: mobile ? 64 : 200,
+      blobBudgetMB: mobile ? 48 : 96,
       concurrency: mobile ? 3 : 4,
+      decodeConcurrency: mobile ? 2 : 3,
       constrained: mobile,
       anchorStep: mobile ? 10 : 20,
       onFrame: (i) => {
@@ -95,31 +120,43 @@ export default function StageScroll() {
       onFail: () => setFailed(true),
     });
 
+    (window as StageProbeWindow).__stageSeq = probe ? seq : undefined;
+
     // Resolución del canvas: según el tamaño en pantalla y el dispositivo, sin superar la fuente (1920 px)
     const resize = () => {
       const { clientWidth: cw, clientHeight: ch } = visual;
       if (!cw || !ch) return;
       const dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2);
-      const k = Math.min(1, STAGE_FRAMES.width / (cw * dpr));
+      const k = Math.min(1, srcW / (cw * dpr));
       canvas.width = Math.round(cw * dpr * k);
       canvas.height = Math.round(ch * dpr * k);
       ctx2d.imageSmoothingQuality = "high";
-      const cover = Math.max(canvas.width / STAGE_FRAMES.width, canvas.height / STAGE_FRAMES.height);
-      seq.setBitmapWidth(Math.min(STAGE_FRAMES.width, Math.max(640, Math.round(STAGE_FRAMES.width * cover))));
+      const cover = Math.max(canvas.width / srcW, canvas.height / srcH);
+      seq.setBitmapWidth(Math.min(srcW, Math.max(640, Math.round(srcW * cover))));
       requestDraw();
     };
     resize();
     const ro = new ResizeObserver(resize);
     ro.observe(visual);
 
-    // No se descarga nada hasta que la sección está cerca del viewport
+    // No se descarga nada hasta que la sección está cerca (2 pantallas) y se queda ahí un momento: un salto de ancla
+    // que la atraviesa no pide fotogramas. Al alejarse se pausa (se cancelan descargas y se liberan bitmaps).
+    let startTimer = 0;
     const io = new IntersectionObserver(
       (entries) => {
-        if (!entries.some((e) => e.isIntersecting)) return;
-        seq.start();
-        io.disconnect();
+        const near = entries.some((e) => e.isIntersecting);
+        clearTimeout(startTimer);
+        if (near) {
+          startTimer = window.setTimeout(() => {
+            seq.setActive(true);
+            seq.start();
+            requestDraw();
+          }, 150);
+        } else {
+          seq.setActive(false);
+        }
       },
-      { rootMargin: "150% 0px" },
+      { rootMargin: "200% 0px" },
     );
     io.observe(visual);
 
@@ -133,7 +170,9 @@ export default function StageScroll() {
           start: "top top",
           end: `+=${Math.round(last * (mobile ? SCROLL_PER_FRAME.mobile : SCROLL_PER_FRAME.desktop))}%`,
           pin,
-          scrub: 0.3,
+          // Sin suavizado propio: Lenis (escritorio) ya suaviza la rueda y en móvil el scroll es nativo. Con `true` el
+          // progreso se aplica en el mismo tick que el scroll (un número lo pasaría por un tween: un frame más tarde).
+          scrub: true,
           anticipatePin: 1,
           invalidateOnRefresh: true,
         },
@@ -142,7 +181,7 @@ export default function StageScroll() {
           if (frame !== current) {
             current = frame;
             seq.setFocus(frame);
-            requestDraw();
+            drawNow();
           }
           if (barRef.current) barRef.current.style.transform = `scaleX(${stageProgressAt(frame, starts, last)})`;
           const idx = stageIndexAt(frame, starts);
@@ -153,10 +192,14 @@ export default function StageScroll() {
         },
       });
       tl.to(proxy, { frame: last, duration: PLAY_SHARE }).to({}, { duration: 1 - PLAY_SHARE });
+      // SmoothScroll completa `getTween()` al saltar a un ancla; con `scrub: true` no hay tween (ya sigue al scroll al
+      // instante) y devuelve un valor que no es un tween. Se deja sin tween para que ese código lo ignore.
+      if (tl.scrollTrigger) (tl.scrollTrigger as unknown as { getTween: () => undefined }).getTween = () => undefined;
     }, section);
 
     return () => {
       ctx.revert();
+      clearTimeout(startTimer);
       io.disconnect();
       ro.disconnect();
       cancelAnimationFrame(raf);
@@ -165,7 +208,8 @@ export default function StageScroll() {
   }, [animated, mobile]);
 
   const finalUrl = getStageFinalUrl();
-  const currentStage = animated ? stage : staticStage;
+  /** Estático: ninguna etapa es la "actual"; las cinco se muestran por igual */
+  const currentStage = animated ? stage : -1;
 
   return (
     <section
@@ -189,7 +233,7 @@ export default function StageScroll() {
           />
           {/* Estado estático / error: escenario terminado. Animado: primer fotograma hasta que el canvas dibuja */}
           <Image
-            src={animated ? getStageFirstUrl() : finalUrl}
+            src={animated ? getStageFirstUrl(mobile ? "mobile" : "full") : finalUrl}
             alt=""
             aria-hidden="true"
             fill
@@ -227,28 +271,37 @@ export default function StageScroll() {
 
         <div className="wrap relative z-10 order-3 pb-20 wide:pb-14 md:pt-6">
           <div className="mb-3 flex items-center justify-between font-mono text-xs uppercase tracking-[0.18em] text-muted">
-            <span className="flex items-center gap-2"><Led pulse={animated} /> Estado {String(currentStage + 1).padStart(2, "0")} / {String(STAGES.length).padStart(2, "0")}</span>
-            <span aria-hidden="true" className="hidden sm:inline">{animated ? "Seguí bajando" : ""}</span>
+            {animated ? (
+              <span className="flex items-center gap-2"><Led pulse /> Estado {String(currentStage + 1).padStart(2, "0")} / {String(STAGES.length).padStart(2, "0")}</span>
+            ) : (
+              <span id="escenario-pasos" className="flex items-center gap-2"><Led /> Proceso de armado · {STAGES.length} pasos</span>
+            )}
+            {animated && <span aria-hidden="true" className="hidden sm:inline">Seguí bajando</span>}
           </div>
-          <div aria-hidden="true" className="relative h-[2px] w-full bg-white/15">
-            <span
-              ref={barRef}
-              className="block h-full origin-left bg-brand-hi"
-              style={{ transform: animated ? "scaleX(0)" : "scaleX(1)" }}
-            />
-            {/* Límite de cada etapa: coincide con el borde izquierdo de su columna (columnas iguales, sin gap) */}
-            {STAGES.map((s, i) => (
+          {animated && (
+            <div aria-hidden="true" className="relative h-[2px] w-full bg-white/15">
               <span
-                key={s.name}
-                className={cn(
-                  "absolute top-1/2 h-2 w-px -translate-y-1/2 transition-colors duration-300",
-                  i <= currentStage ? "bg-brand-hi" : "bg-white/40",
-                )}
-                style={{ left: `${(i / STAGES.length) * 100}%` }}
+                ref={barRef}
+                className="block h-full origin-left bg-brand-hi"
+                style={{ transform: "scaleX(0)" }}
               />
-            ))}
-          </div>
-          <ol aria-label="Etapas del montaje" className="mt-5 grid gap-2 max-sm:min-h-[7.5rem] sm:grid-cols-5 sm:gap-0">
+              {/* Límite de cada etapa: coincide con el borde izquierdo de su columna (columnas iguales, sin gap) */}
+              {STAGES.map((s, i) => (
+                <span
+                  key={s.name}
+                  className={cn(
+                    "absolute top-1/2 h-2 w-px -translate-y-1/2 transition-colors duration-300",
+                    i <= currentStage ? "bg-brand-hi" : "bg-white/40",
+                  )}
+                  style={{ left: `${(i / STAGES.length) * 100}%` }}
+                />
+              ))}
+            </div>
+          )}
+          <ol
+            {...(animated ? { "aria-label": "Etapas del montaje" } : { "aria-labelledby": "escenario-pasos" })}
+            className={cn("grid gap-2 sm:grid-cols-5 sm:gap-0", animated ? "mt-5 max-sm:min-h-[7.5rem]" : "mt-4")}
+          >
             {STAGES.map((s, i) => {
               const current = i === currentStage;
               return (
@@ -257,7 +310,7 @@ export default function StageScroll() {
                   aria-current={animated && current ? "step" : undefined}
                   className={cn(
                     "border-l-2 pl-3 transition-colors duration-500 sm:min-h-[6rem] sm:pr-4",
-                    current ? "border-brand-hi text-text" : "border-white/15 text-muted",
+                    current ? "border-brand-hi text-text" : animated ? "border-white/15 text-muted" : "border-brand-hi/50 text-text",
                     // En móvil animado solo se muestra la etapa activa para no tapar el visual
                     animated && !current && "max-sm:hidden",
                   )}

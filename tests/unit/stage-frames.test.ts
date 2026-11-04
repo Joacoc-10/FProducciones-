@@ -20,6 +20,20 @@ describe("secuencia del escenario", () => {
   });
 });
 
+describe("variante móvil", () => {
+  it("replica la secuencia (mismos números) con archivos existentes en frames-960", () => {
+    const full = getStageFrameUrls();
+    const mobile = getStageFrameUrls("mobile");
+    expect(mobile).toHaveLength(full.length);
+    mobile.forEach((u, i) => {
+      expect(u).toContain(`/frames-960/frame-${String(i).padStart(3, "0")}.webp`);
+      expect(u.split("?")[1]).toBe(full[i].split("?")[1]);
+      expect(fs.existsSync(path.join(__dirname, "../../public", u.split("?")[0])), u).toBe(true);
+    });
+    expect(getStageFirstUrl("mobile")).toBe(mobile[0]);
+  });
+});
+
 describe("etapas", () => {
   it("fija los límites de las cinco etapas según los fotogramas nuevos", () => {
     expect(getStageStartPositions()).toEqual([0, 50, 72, 99, 115]);

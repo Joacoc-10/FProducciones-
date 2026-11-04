@@ -14,6 +14,13 @@ export const STAGE_FRAMES = {
   dir: "/media/ai/stage/frames",
   width: 1920,
   height: 1080,
+  /**
+   * Variante móvil: mismos fotogramas (mismos números) reducidos a `mobileWidth` px de ancho, generada con
+   * `scripts/make-stage-mobile-frames.mjs`. Los originales no se tocan. Si se reemplaza un fotograma, regenerarla
+   * y subir `version`.
+   */
+  mobileDir: "/media/ai/stage/frames-960",
+  mobileWidth: 960,
   /** Se agrega como `?v=` a cada URL; subirlo al reemplazar fotogramas (los frames se sirven con caché larga) */
   version: 3,
   /** índice original → ruta pública alternativa */
@@ -33,17 +40,21 @@ export const STAGE_FRAMES = {
 
 const pad = (n: number) => String(n).padStart(3, "0");
 
-/** URL del fotograma original `n` */
-function frameUrl(n: number): string {
-  const base = STAGE_FRAMES.overrides[n] ?? `${STAGE_FRAMES.dir}/frame-${pad(n)}.webp`;
+export type StageVariant = "full" | "mobile";
+
+/** URL del fotograma original `n` (o de su variante móvil, salvo que tenga un reemplazo en `overrides`) */
+function frameUrl(n: number, variant: StageVariant = "full"): string {
+  const override = STAGE_FRAMES.overrides[n];
+  const base =
+    override ?? `${variant === "mobile" ? STAGE_FRAMES.mobileDir : STAGE_FRAMES.dir}/frame-${pad(n)}.webp`;
   return `${base}?v=${STAGE_FRAMES.version}`;
 }
 
 /** URLs en orden de reproducción, ya sin los fotogramas omitidos */
-export function getStageFrameUrls(): string[] {
+export function getStageFrameUrls(variant: StageVariant = "full"): string[] {
   const skip = new Set<number>(STAGE_FRAMES.skip);
   const urls: string[] = [];
-  for (let n = 0; n < STAGE_FRAMES.total; n++) if (!skip.has(n)) urls.push(frameUrl(n));
+  for (let n = 0; n < STAGE_FRAMES.total; n++) if (!skip.has(n)) urls.push(frameUrl(n, variant));
   return urls;
 }
 
@@ -54,8 +65,8 @@ export function getStageFinalUrl(): string {
 }
 
 /** Primer fotograma (estado inicial) */
-export function getStageFirstUrl(): string {
-  return getStageFrameUrls()[0];
+export function getStageFirstUrl(variant: StageVariant = "full"): string {
+  return getStageFrameUrls(variant)[0];
 }
 
 /** Posición (en la secuencia, ya sin omitidos) donde empieza cada etapa */

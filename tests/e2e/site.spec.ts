@@ -41,7 +41,7 @@ test.describe("landing", () => {
     await expect(page.locator(".pin-spacer")).toHaveCount(0);
     await expect(page.locator("section").first().locator("video")).toHaveCount(0);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await expect(page.getByRole("list", { name: "Etapas del montaje" }).getByRole("listitem")).toHaveCount(5);
+    await expect(page.getByRole("list", { name: "Proceso de armado · 5 pasos" }).getByRole("listitem")).toHaveCount(5);
     await ctx.close();
   });
 
