@@ -11,11 +11,11 @@ import { ChannelLabel, Led } from "@/components/console/Console";
 
 /** Etapas del montaje: texto genérico, sin medidas ni capacidades. */
 const STAGES = [
-  { name: "Plataforma desplegada", text: "Se despliega la plataforma portátil: lista para recibir el show." },
-  { name: "Estructura", text: "Se arma la estructura que sostiene las luces y el sonido." },
-  { name: "Sonido", text: "Se instala el sistema de audio." },
-  { name: "Iluminación", text: "Se montan y apuntan las luces." },
-  { name: "Show", text: "Todo listo: el escenario cobra vida." },
+  { name: "Despliegue", text: "Desplegamos la plataforma y preparamos la base del escenario." },
+  { name: "Estructura", text: "Montamos la estructura metálica que sostiene las luces." },
+  { name: "Sonido", text: "Instalamos el sistema de sonido para que todo se escuche perfecto." },
+  { name: "Iluminación", text: "Instalamos las luces que le dan vida al espectáculo." },
+  { name: "¡Todo listo!", text: "¡Que empiece el show!" },
 ] as const;
 
 type StageProbeWindow = Window & {
@@ -333,11 +333,12 @@ export default function StageScroll() {
 
         <div className="wrap relative z-10 order-1 pt-24 md:pt-28 wide:pt-32">
           <ChannelLabel channel="CH 03">Escenario portátil</ChannelLabel>
-          <h2 id="escenario-title" className="h-section mt-5 max-w-[14ch]">
-            Del piso vacío <span className="text-brand-hi">al show.</span>
+          <h2 id="escenario-title" className="h-section mt-5 md:max-w-none">
+            <span className="block">Tu escenario.</span>
+            <span className="block text-brand-hi">Donde sea.</span>
           </h2>
           <p className="mt-3 max-w-md text-text/80 md:mt-5">
-            Nuestra plataforma portátil y plegable se traslada y se arma donde se hace tu evento.
+            Llevamos y montamos nuestro escenario portátil para que vos solo te preocupes por disfrutar.
           </p>
         </div>
 
@@ -389,7 +390,7 @@ export default function StageScroll() {
                 >
                   <span className="font-mono text-xs tracking-[0.18em]">{String(i + 1).padStart(2, "0")}</span>
                   <p className="font-display text-xl font-bold uppercase tracking-[0.04em]">{s.name}</p>
-                  <p className={cn("mt-1 text-sm", animated && !current && "sm:opacity-0", "transition-opacity duration-500")}>{s.text}</p>
+                  <p className={cn("mt-1", i === STAGES.length - 1 ? "font-display text-base font-bold uppercase tracking-[0.04em] text-brand-hi sm:text-lg" : "text-sm", animated && !current && "sm:opacity-0", "transition-opacity duration-500")}>{s.text}</p>
                 </li>
               );
             })}
