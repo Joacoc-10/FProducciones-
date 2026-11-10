@@ -126,3 +126,56 @@ html.lenis, html.lenis body { height: auto; }
     scroll-behavior: auto !important;
   }
 }
+
+/* Indicación del escenario (StageScroll): visible solo con data-show="true"; solo transform/opacity. */
+.stage-hint {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  padding: 0 1rem 0.75rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.stage-hint[data-show="true"] { opacity: 1; }
+.stage-hint-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 1.75rem 2rem 0.5rem;
+  text-align: center;
+  color: rgb(var(--text));
+  background: radial-gradient(ellipse 70% 75% at 50% 62%, rgb(var(--bg) / 0.88), rgb(var(--bg) / 0.55) 55%, transparent 80%);
+}
+.stage-hint-icon { display: inline-flex; height: 2.1rem; color: rgb(var(--brand-hi)); align-items: center; }
+.stage-hint-title { font-family: var(--font-mono, monospace); font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase; color: rgb(var(--text)); margin-top: 0.25rem; text-shadow: 0 1px 8px rgb(var(--bg) / 0.9); }
+.stage-hint-text { font-size: 0.875rem; color: rgb(var(--text) / 0.9); line-height: 1.3; text-shadow: 0 1px 8px rgb(var(--bg) / 0.9); }
+.stage-hint-touch, .stage-hint-fine { display: none; }
+.stage-hint-fine { display: inline; }
+@media (hover: none) and (pointer: coarse) {
+  .stage-hint-fine { display: none; }
+  .stage-hint-touch { display: inline; }
+}
+.stage-hint[data-show="true"] .stage-hint-icon svg { animation: stage-hint-swipe 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+@keyframes stage-hint-swipe {
+  0% { transform: translateY(10px); opacity: 0; }
+  25% { opacity: 1; }
+  70% { transform: translateY(-8px); opacity: 1; }
+  100% { transform: translateY(-12px); opacity: 0; }
+}
+/* Pantallas anchas: mismo diseño, centrado sobre el escenario y un poco más grande */
+@media (min-width: 768px) and (min-aspect-ratio: 5/4) {
+  .stage-hint { inset: 0; align-items: center; padding: 0 1rem 4rem; }
+  .stage-hint-card { padding: 2rem 2.5rem 1rem; }
+  .stage-hint-icon { height: 2.6rem; }
+  .stage-hint-icon svg { width: 38px; height: 38px; }
+  .stage-hint-title { font-size: 0.8rem; }
+  .stage-hint-text { font-size: 1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage-hint svg { animation: none !important; }
+}

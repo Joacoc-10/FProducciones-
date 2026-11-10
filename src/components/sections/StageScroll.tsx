@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { gsap, registerGsap } from "@/lib/gsap";
+import { gsap, ScrollTrigger, registerGsap } from "@/lib/gsap";
 import { useMotionPrefs } from "@/lib/use-motion-prefs";
 import { FrameSequence } from "@/lib/frame-sequence";
 import { getStageFinalUrl, getStageFirstUrl, getStageFrameUrls, getStageStartPositions, stageIndexAt, stageProgressAt, STAGE_FRAMES } from "@/content/stage-frames";
@@ -26,8 +26,44 @@ type StageProbeWindow = Window & {
 /** Porción del recorrido que se usa para avanzar fotogramas; el resto mantiene el último a la vista. */
 const PLAY_SHARE = 0.92;
 
+/** Fotograma desde el cual se retira la indicación (el usuario ya avanzó) y fotograma al que hay que volver para que reaparezca. */
+const HINT_DISMISS_FRAME = 2;
+const HINT_RESTORE_FRAME = 0;
+
 /** Recorrido de scroll (% de alto de pantalla) por fotograma. */
 const SCROLL_PER_FRAME = { desktop: 2.8, mobile: 2.2 } as const;
+
+/** Mano deslizando hacia arriba (todos los dispositivos): la mano sube y se desvanece en bucle. */
+function HandIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M22 14a8 8 0 0 1-8 8" />
+      <path d="M18 11v-1a2 2 0 0 0-2-2a2 2 0 0 0-2 2" />
+      <path d="M14 10V9a2 2 0 0 0-2-2a2 2 0 0 0-2 2v1" />
+      <path d="M10 9.5V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v10" />
+      <path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
+    </svg>
+  );
+}
+
+/**
+ * Indicación de "seguí desplazándote". Decorativa y sin eventos: StageScroll controla `data-show` desde el progreso
+ * existente (sin listeners propios ni renders). El texto cambia según el puntero, por CSS (`.stage-hint` en globals.css).
+ */
+function StageHint({ ref }: { ref: React.Ref<HTMLDivElement> }) {
+  return (
+    <div ref={ref} data-show="false" aria-hidden="true" className="stage-hint">
+      <div className="stage-hint-card">
+        <span className="stage-hint-icon"><HandIcon /></span>
+        <p className="stage-hint-title">Armá el escenario</p>
+        <p className="stage-hint-text">
+          <span className="stage-hint-touch">Deslizá para ver cómo cobra vida.</span>
+          <span className="stage-hint-fine">Hacé scroll para ver cómo cobra vida.</span>
+        </p>
+      </div>
+    </div>
+  );
+}
 
 /**
  * Sección destacada del escenario portátil.
@@ -41,6 +77,7 @@ export default function StageScroll() {
   const visualRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const barRef = useRef<HTMLSpanElement>(null);
+  const hintRef = useRef<HTMLDivElement>(null);
 
   const { autoplayOk, mobile } = useMotionPrefs();
   const [stage, setStage] = useState(0);
@@ -72,6 +109,15 @@ export default function StageScroll() {
     const starts = getStageStartPositions();
     let current = 0;
     let exact = false;
+    // Indicación de interacción: se muestra pinneado + ya dibujado, y se retira al empezar el armado y reaparece al volver al inicio
+    const hint = hintRef.current;
+    let hintReady = false;
+    let hintActive = false;
+    let hintDone = false;
+    const syncHint = () => {
+      const show = hintReady && hintActive && !hintDone ? "true" : "false";
+      if (hint && hint.dataset.show !== show) hint.dataset.show = show;
+    };
     let raf = 0;
 
     const draw = () => {
@@ -86,6 +132,10 @@ export default function StageScroll() {
       const h = img.height * k;
       ctx2d.drawImage(img, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
       canvas.style.opacity = "1";
+      if (!hintReady) {
+        hintReady = true;
+        syncHint();
+      }
       probe?.({ wanted: current, shown, exact, t: performance.now() });
     };
     /** Para fotogramas que llegan de la red: se agrupan en el siguiente frame */
@@ -183,6 +233,14 @@ export default function StageScroll() {
             seq.setFocus(frame);
             drawNow();
           }
+          // Histéresis: se oculta al avanzar (frame ≥ 2) y reaparece solo al volver al inicio exacto (frame 0)
+          if (!hintDone && frame >= HINT_DISMISS_FRAME) {
+            hintDone = true;
+            syncHint();
+          } else if (hintDone && frame <= HINT_RESTORE_FRAME) {
+            hintDone = false;
+            syncHint();
+          }
           if (barRef.current) barRef.current.style.transform = `scaleX(${stageProgressAt(frame, starts, last)})`;
           const idx = stageIndexAt(frame, starts);
           if (idx !== lastStage) {
@@ -191,6 +249,19 @@ export default function StageScroll() {
           }
         },
       });
+      // La indicación aparece cuando la sección ya domina la pantalla (antes de fijarse) y dura todo el recorrido
+      const main = tl.scrollTrigger;
+      if (main) {
+        ScrollTrigger.create({
+          trigger: section,
+          start: "top 40%",
+          end: () => main.end,
+          onToggle: (self) => {
+            hintActive = self.isActive;
+            syncHint();
+          },
+        });
+      }
       tl.to(proxy, { frame: last, duration: PLAY_SHARE }).to({}, { duration: 1 - PLAY_SHARE });
       // SmoothScroll completa `getTween()` al saltar a un ancla; con `scrub: true` no hay tween (ya sigue al scroll al
       // instante) y devuelve un valor que no es un tween. Se deja sin tween para que ese código lo ignore.
@@ -257,6 +328,7 @@ export default function StageScroll() {
           <div aria-hidden="true" className="absolute inset-0 hidden bg-gradient-to-b from-bg via-bg/10 to-bg wide:block" />
           <div aria-hidden="true" className="absolute inset-0 hidden bg-gradient-to-r from-bg/70 via-bg/10 to-transparent wide:block" />
           <div aria-hidden="true" className="grid-lines absolute inset-0 opacity-30" />
+          {animated && <StageHint ref={hintRef} />}
         </div>
 
         <div className="wrap relative z-10 order-1 pt-24 md:pt-28 wide:pt-32">
